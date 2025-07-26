@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+  <title>AIML Authority Login</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="head">
+    <div class="logo-periphery">
+      <img id="logo" src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AI & ML Authority logo" />
+    </div>
+    <div class="tag">AIML Authority</div>
+  </div>
+
+  <div class="Menu-bar">
+    <span class="burger" onclick="toggleMenu()">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </span>
+
+    <nav id="menuOptions" class="menu-options">
+      <a href="#">Home</a>
+      <a href="#">FAQs</a>
+      <a href="#">Contact</a>
+      <a href="#">Help</a>
+      <a href="#">Do & Don't</a>
+    </nav>
+  </div>
+
+  <marquee behavior="scroll" direction="left">
+    <h3>Welcome to AIML Testing Panel</h3>
+  </marquee>
+
+  <div class="main-box">
+    <!-- Registration -->
+    <div class="container">
+      <div class="login"><div id="log-h">New Candidates Register Here</div></div>
+      <div id="new">
+        <a href="#">New Candidate Registration</a>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <div class="container">
+      <div class="login"><div id="log-h">Only Registered Login Here</div></div>
+      <form id="loginForm" onsubmit="return validateForm(event)">
+        <div class="log-part">
+          <label>Application Number <span>*</span></label>
+          <input type="text" id="appNo" placeholder="Enter application number" />
+        </div>
+
+        <div class="log-part">
+          <label>Password <span>*</span></label>
+          <input type="password" id="password" placeholder="Enter password" />
+        </div>
+
+        <div class="log-part">
+          <label>Captcha <span>*</span></label>
+          <div id="cap">
+            <div id="captchacode">aeS425</div>
+            <span id="refresh" onclick="generateCaptcha()">Refresh</span>
+          </div>
+          <input type="text" id="captchaInput" placeholder="Enter captcha code" />
+        </div>
+
+        <div class="log-part">
+          <button type="submit">Login</button>
+        </div>
+
+        <p>Forgot Application Number OR Password Click below link</p>
+        <button type="button" id="f1">Forgot Application No. ?</button>
+        <button type="button" id="f2">Forgot Password ?</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <main>AIML Authority &copy; 2025 All Rights Reserved.</main>
+  </footer>
+
+  <script>
+    let currentCaptcha = "aeS425";
+
+    function generateCaptcha() {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let captcha = '';
+      for (let i = 0; i < 6; i++) {
+        captcha += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      currentCaptcha = captcha;
+      document.getElementById('captchacode').innerText = captcha;
+    }
+
+    function validateForm(event) {
+      event.preventDefault();
+      const appNo = document.getElementById("appNo").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const captchaInput = document.getElementById("captchaInput").value.trim();
+
+      if (!appNo || !password || !captchaInput) {
+        alert("All fields are required.");
+        return false;
+      }
+
+      if (captchaInput !== currentCaptcha) {
+        alert("Invalid captcha. Please try again.");
+        generateCaptcha();
+        return false;
+      }
+
+      alert("Login successful!");
+      return true;
+    }
+
+    function toggleMenu() {
+      document.getElementById("menuOptions").classList.toggle("show");
+    }
+
+    window.onload = generateCaptcha;
+  </script>
+</body>
+</html>
