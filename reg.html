@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+  <title>AIML Authority Registration</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .error-message {
+      color: red;
+      font-size: 13px;
+      margin-top: 5px;
+      display: block;
+    }
+    input, select {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      width: 100%;
+      margin-top: 5px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+    button {
+      padding: 12px;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .mobile-group {
+      display: flex;
+      gap: 10px;
+    }
+    .mobile-group select {
+      width: 80px;
+      flex-shrink: 0;
+    }
+    .mobile-group input {
+      flex: 1;
+    }
+
+    .password-toggle {
+      position: relative;
+    }
+    .toggle-icon {
+      position: absolute;
+      top: 13px;
+      right: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #007bff;
+      user-select: none;
+    }
+    .password-toggle input {
+      padding-right: 40px;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a",
+      measurementId: "G-E54Z2TN27J",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function showError(id, message) {
+      document.getElementById(`${id}-error`).innerText = message;
+    }
+
+    function clearError(id) {
+      document.getElementById(`${id}-error`).innerText = '';
+    }
+
+    function validateFields(name, email, mobile, password) {
+      let valid = true;
+
+      if (!name) {
+        showError("name", "Name cannot be blank.");
+        valid = false;
+      } else if (!/^[a-zA-Z ]{3,}$/.test(name)) {
+        showError("name", "Full Name must be at least 3 letters.");
+        valid = false;
+      } else {
+        clearError("name");
+      }
+
+      if (!email) {
+        showError("email", "Email cannot be blank.");
+        valid = false;
+      } else if (!/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+        showError("email", "Invalid email format.");
+        valid = false;
+      } else {
+        clearError("email");
+      }
+
+      if (!mobile) {
+        showError("mobile", "Mobile number cannot be blank.");
+        valid = false;
+      } else if (!/^[6-9]\d{9}$/.test(mobile)) {
+        showError("mobile", "Mobile must be 10 digits starting with 6-9.");
+        valid = false;
+      } else {
+        clearError("mobile");
+      }
+
+      if (!password) {
+        showError("password", "Password cannot be blank.");
+        valid = false;
+      } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/.test(password)) {
+        showError("password", "Password must be at least 6 chars with upper, lower, number & special char.");
+        valid = false;
+      } else {
+        clearError("password");
+      }
+
+      return valid;
+    }
+
+    window.registerUser = async function(event) {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const mobile = document.getElementById("mobile").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!validateFields(name, email, mobile, password)) return;
+
+      const snapshot = await get(ref(db, 'registrations'));
+      let duplicate = false;
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        Object.values(data).forEach(entry => {
+          if (
+            entry.email.toLowerCase() === email.toLowerCase() ||
+            entry.mobile === mobile
+          ) {
+            duplicate = true;
+          }
+        });
+      }
+
+      if (duplicate) {
+        alert("A user with this email or mobile already exists.");
+        return;
+      }
+
+      const applicationNumber = "APP" + Date.now().toString().slice(-6);
+
+      await set(ref(db, 'registrations/' + applicationNumber), {
+        name,
+        email,
+        mobile,
+        password,
+        applicationNumber
+      });
+
+      document.getElementById("appNumberDisplay").textContent = applicationNumber;
+      document.getElementById("successBox").style.display = "block";
+      document.getElementById("registerForm").reset();
+    };
+
+    window.togglePassword = function () {
+      const passwordInput = document.getElementById("password");
+      const toggleIcon = document.getElementById("toggle-icon");
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleIcon.textContent = "🙈";
+      } else {
+        passwordInput.type = "password";
+        toggleIcon.textContent = "👁️";
+      }
+    };
+  </script>
+</head>
+<body>
+  <div class="head">
+    <div class="logo-periphery">
+      <img id="logo" src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AI & ML Authority logo" />
+    </div>
+    <div class="tag">AIML Authority</div>
+  </div>
+
+  <div class="Menu-bar">
+    <span class="burger" onclick="toggleMenu()">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </span>
+    <nav id="menuOptions" class="menu-options">
+      <a href="#">Home</a>
+      <a href="#">FAQs</a>
+      <a href="#">Contact</a>
+      <a href="#">Help</a>
+      <a href="#">Do & Don't</a>
+    </nav>
+  </div>
+
+  <div class="main-box">
+    <div class="container">
+      <div class="login"><div id="log-h">Candidate Registration</div></div>
+      <form id="registerForm" onsubmit="registerUser(event)">
+        <div class="log-part">
+          <label>Full Name <span>*</span></label>
+          <input type="text" id="name" placeholder="Enter full name" />
+          <span id="name-error" class="error-message"></span>
+        </div>
+
+        <div class="log-part">
+          <label>Email <span>*</span></label>
+          <input type="email" id="email" placeholder="Enter email" />
+          <span id="email-error" class="error-message"></span>
+        </div>
+
+        <div class="log-part">
+          <label>Mobile Number <span>*</span></label>
+          <div class="mobile-group">
+            <select disabled><option selected>+91</option></select>
+            <input type="text" id="mobile" maxlength="10" placeholder="1234567890" />
+          </div>
+          <span id="mobile-error" class="error-message"></span>
+        </div>
+
+        <div class="log-part">
+          <label>Password <span>*</span></label>
+          <div class="password-toggle">
+            <input type="password" id="password" placeholder="Create password" />
+            <span class="toggle-icon" id="toggle-icon" onclick="togglePassword()">👁️</span>
+          </div>
+          <span id="password-error" class="error-message"></span>
+        </div>
+
+        <div class="log-part">
+          <button type="submit">Register</button>
+        </div>
+      </form>
+
+      <div id="successBox" style="display: none; margin-top: 20px; padding: 15px; background: #e6ffed; border-left: 4px solid #28a745; border-radius: 6px;">
+        <strong>🎉 Registered Successfully!</strong>
+        <p>Your Application Number is: <span id="appNumberDisplay" style="font-weight: bold; color: #1e7e34;"></span></p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="login"><div id="log-h">Already Registered? Login</div></div>
+      <div id="new">
+        <a href="index.html">Go to Login</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <main>AIML Authority &copy; 2025 All Rights Reserved.</main>
+  </footer>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById("menuOptions").classList.toggle("show");
+    }
+  </script>
+</body>
+</html>
