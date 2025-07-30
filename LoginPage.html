@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SR Security Login</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a",
+      measurementId: "G-E54Z2TN27J",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.validateForm = async function(event) {
+      event.preventDefault();
+      const appNo = document.getElementById("appNo").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const captchaInput = document.getElementById("captchaInput").value.trim();
+
+      if (!appNo || !password || !captchaInput) {
+        alert("All fields are required.");
+        return false;
+      }
+
+      if (captchaInput !== currentCaptcha) {
+        alert("Invalid captcha. Please try again.");
+        generateCaptcha();
+        return false;
+      }
+
+      const userRef = ref(db, 'registrations/' + appNo);
+      const snapshot = await get(userRef);
+
+      if (!snapshot.exists()) {
+        alert("Application number not found.");
+        return false;
+      }
+
+      const userData = snapshot.val();
+      if (userData.password !== password) {
+        alert("Incorrect password.");
+        return false;
+      }
+
+      window.location.href = `dashboard.html?app=${appNo}`;
+      return true;
+    };
+  </script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    header {
+      background-color: #0a1f44;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .notice {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .panel h2 {
+      color: #0a1f44;
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline:none;
+    }
+   input:hover{
+     border:1px solid #1376fb;
+   }
+    .captcha-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #e0e0e0;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .refresh {
+      color: #007bff;
+      cursor: pointer;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      background-color: #0a1f44;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .forgot-links {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .forgot-links a {
+      color: #007bff;
+      text-decoration: none;
+      margin: 5px;
+      display: inline-block;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    @media (min-width: 768px) {
+      .main {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .panel {
+        width: 48%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SR Security & Placement Service</h1>
+    <p>Authorized Portal</p>
+  </header>
+
+  <div class="main">
+    <!-- Notice + Login Panel -->
+    <div class="panel">
+      <div class="notice">
+        🕒 <strong>Note:</strong> Recruitment is open only during specific periods each year. If the registration link is inactive, it means the window is currently closed.
+      </div>
+       <br>
+      <h2>Candidate Login</h2>
+      <form id="loginForm" onsubmit="return validateForm(event)">
+        <label for="appNo">Application Number *</label>
+        <input type="text" id="appNo" placeholder="Enter application number" />
+
+        <label for="password">Password *</label>
+        <input type="password" id="password" placeholder="Enter password" />
+
+        <label for="captchaInput">Captcha *</label>
+        <div class="captcha-box">
+          <span id="captchacode">aeS425</span>
+          <span class="refresh" onclick="generateCaptcha()">↻ Refresh</span>
+        </div>
+        <input type="text" id="captchaInput" placeholder="Enter the above captcha" />
+
+        <button type="submit">Login</button>
+      </form>
+
+      <div class="forgot-links">
+        <a href="Forgotapplication.html">Forgot App No.?</a> |
+        <a href="Forgotpassword.html">Forgot Password?</a>
+      </div>
+    </div>
+
+    <!-- Registration Panel -->
+    <div class="panel">
+      <h2>New Registration</h2>
+      <p>If you're a new applicant, please register using the button below.</p>
+      <a href="apply.html">
+        <button type="button">Register Now</button>
+      </a>
+      <p style="margin-top: 10px; font-size: 14px; color: gray;">
+        ⚠️ Registration is only allowed during active recruitment windows.
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 SR Security & Placement Service. All Rights Reserved.
+  </footer>
+
+  <script>
+    let currentCaptcha = "aeS425";
+
+    function generateCaptcha() {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let captcha = '';
+      for (let i = 0; i < 6; i++) {
+        captcha += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      currentCaptcha = captcha;
+      document.getElementById('captchacode').innerText = captcha;
+    }
+
+    window.onload = generateCaptcha;
+  </script>
+</body>
+</html>
