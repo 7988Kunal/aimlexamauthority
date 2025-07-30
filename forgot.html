@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+  <title>Forgot Password - AIML Authority</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .error-message {
+      color: red;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .password-toggle {
+      position: relative;
+    }
+    .password-toggle input {
+      padding-right: 40px;
+    }
+    .toggle-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 14px;
+      color: #007bff;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a",
+      measurementId: "G-E54Z2TN27J",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let verified = false;
+
+    window.handleSubmit = async function(event) {
+      event.preventDefault();
+      const appNo = document.getElementById("appNo").value.trim();
+      const captchaInput = document.getElementById("captchaInput").value.trim();
+      const errorBox = document.getElementById("error");
+
+      if (!appNo || !captchaInput) {
+        errorBox.textContent = "All fields are required.";
+        return false;
+      }
+
+      if (captchaInput !== currentCaptcha) {
+        errorBox.textContent = "Invalid captcha. Please try again.";
+        generateCaptcha();
+        return false;
+      }
+
+      const userRef = ref(db, 'registrations/' + appNo);
+      const snapshot = await get(userRef);
+
+      if (!snapshot.exists()) {
+        errorBox.textContent = "Application number not found.";
+        return false;
+      }
+
+      verified = true;
+      document.getElementById("resetSection").style.display = "block";
+      document.getElementById("verifySection").style.display = "none";
+      errorBox.textContent = "";
+      return true;
+    };
+
+    window.handleReset = async function (e) {
+      e.preventDefault();
+      const appNo = document.getElementById("appNo").value.trim();
+      const newPass = document.getElementById("newPass").value.trim();
+      const confirmPass = document.getElementById("confirmPass").value.trim();
+      const errorBox = document.getElementById("error");
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+
+      if (!newPass || !confirmPass) {
+        errorBox.textContent = "Please fill both password fields.";
+        return;
+      }
+
+      if (!passwordRegex.test(newPass)) {
+        errorBox.textContent = "Password must be at least 6 characters with uppercase, lowercase, number, and special character.";
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        errorBox.textContent = "Passwords do not match.";
+        return;
+      }
+
+      const userRef = ref(db, 'registrations/' + appNo);
+      const snapshot = await get(userRef);
+
+      if (!snapshot.exists()) {
+        errorBox.textContent = "Unexpected error. Please retry.";
+        return;
+      }
+
+      const userData = snapshot.val();
+      userData.password = newPass;
+
+      await set(userRef, userData);
+      alert("Password successfully reset.");
+      window.location.href = "index.html";
+    };
+
+    window.togglePasswordVisibility = function(id, iconId) {
+      const input = document.getElementById(id);
+      const icon = document.getElementById(iconId);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.textContent = "🙈";
+      } else {
+        input.type = "password";
+        icon.textContent = "👁️";
+      }
+    };
+  </script>
+</head>
+<body>
+  <div class="head">
+    <div class="logo-periphery">
+      <img id="logo" src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AI & ML Authority logo" />
+    </div>
+    <div class="tag">AIML Authority</div>
+  </div>
+
+  <div class="Menu-bar">
+    <span class="burger" onclick="toggleMenu()">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </span>
+    <nav id="menuOptions" class="menu-options">
+      <a href="#">Home</a>
+      <a href="#">FAQs</a>
+      <a href="#">Contact</a>
+      <a href="#">Help</a>
+      <a href="#">Do & Don't</a>
+    </nav>
+  </div>
+
+  <div class="main-box">
+    <div class="container">
+      <div class="login"><div id="log-h">Reset Your Password</div></div>
+
+      <!-- Step 1: Verify App No -->
+      <form id="verifySection" onsubmit="return handleSubmit(event)">
+        <div class="log-part">
+          <label>Application Number <span>*</span></label>
+          <input type="text" id="appNo" placeholder="Enter application number" />
+        </div>
+        <div class="log-part">
+          <label>Captcha <span>*</span></label>
+          <div id="cap">
+            <div id="captchacode">A1b2C3</div>
+            <span id="refresh" onclick="generateCaptcha()">Refresh</span>
+          </div>
+          <input type="text" id="captchaInput" placeholder="Enter captcha code" />
+        </div>
+        <div class="log-part">
+          <button type="submit">Verify</button>
+        </div>
+      </form>
+
+      <!-- Step 2: Reset Password -->
+      <form id="resetSection" style="display: none;" onsubmit="return handleReset(event)">
+        <div class="log-part">
+          <label>New Password <span>*</span></label>
+          <div class="password-toggle">
+            <input type="password" id="newPass" placeholder="Enter new password" />
+            <span class="toggle-icon" id="newPassToggle" onclick="togglePasswordVisibility('newPass', 'newPassToggle')">👁️</span>
+          </div>
+        </div>
+        <div class="log-part">
+          <label>Confirm Password <span>*</span></label>
+          <div class="password-toggle">
+            <input type="password" id="confirmPass" placeholder="Confirm new password" />
+            <span class="toggle-icon" id="confirmPassToggle" onclick="togglePasswordVisibility('confirmPass', 'confirmPassToggle')">👁️</span>
+          </div>
+        </div>
+        <div class="log-part">
+          <button type="submit">Reset Password</button>
+        </div>
+      </form>
+
+      <p id="error" class="error-message"></p>
+    </div>
+  </div>
+
+  <footer>
+    <main>AIML Authority &copy; 2025 All Rights Reserved.</main>
+  </footer>
+
+  <script>
+    let currentCaptcha = "A1b2C3";
+    function generateCaptcha() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let captcha = '';
+      for (let i = 0; i < 6; i++) {
+        captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      currentCaptcha = captcha;
+      document.getElementById('captchacode').innerText = captcha;
+    }
+
+    function toggleMenu() {
+      document.getElementById("menuOptions").classList.toggle("show");
+    }
+
+    window.onload = generateCaptcha;
+  </script>
+</body>
+</html>
