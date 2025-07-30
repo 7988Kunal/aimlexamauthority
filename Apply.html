@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SR Security Registration</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f5f5;
+  }
+
+  header {
+    background-color: #0a1f44;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .main-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    padding: 30px 20px;
+  }
+
+  .container {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .login #log-h {
+    font-size: 22px;
+    font-weight: bold;
+    color: #0a1f44;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  label {
+    font-weight: bold;
+    display: block;
+    margin-top: 15px;
+  }
+
+  input, select {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    width: 100%;
+    margin-top: 5px;
+    font-size: 15px;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+
+  .mobile-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .mobile-group select {
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  .mobile-group input {
+    flex: 1;
+  }
+
+  .password-toggle {
+    position: relative;
+    width: 100%;
+  }
+
+  .password-toggle input {
+    width: 100%;
+    padding-right: 40px;
+  }
+
+  .toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: #007bff;
+    user-select: none;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+  }
+
+  button {
+    padding: 12px;
+    width: 100%;
+    background-color: #0a1f44;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 25px;
+  }
+
+  button:hover {
+    background-color: #06132c;
+  }
+
+  #successBox {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e6ffed;
+    border-left: 4px solid #28a745;
+    border-radius: 6px;
+  }
+
+  #successBox span {
+    font-weight: bold;
+    color: #1e7e34;
+  }
+
+  #new {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  #new a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    color: #888;
+    background: #f5f5f5;
+  }
+
+  /* Responsive Enhancements */
+  @media (max-width: 500px) {
+    .toggle-icon {
+      font-size: 16px;
+      right: 10px;
+    }
+
+    .container {
+      padding: 20px 15px;
+    }
+
+    input, select {
+      font-size: 14px;
+    }
+
+    button {
+      font-size: 15px;
+    }
+  }
+</style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function showError(id, message) {
+      document.getElementById(`${id}-error`).innerText = message;
+    }
+
+    function clearError(id) {
+      document.getElementById(`${id}-error`).innerText = '';
+    }
+
+    function validateFields(name, email, mobile, password) {
+      let valid = true;
+
+      if (!name) {
+        showError("name", "Name cannot be blank.");
+        valid = false;
+      } else if (!/^[a-zA-Z ]{3,}$/.test(name)) {
+        showError("name", "Full Name must be at least 3 letters.");
+        valid = false;
+      } else {
+        clearError("name");
+      }
+
+      if (!email) {
+        showError("email", "Email cannot be blank.");
+        valid = false;
+      } else if (!/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+        showError("email", "Invalid email format.");
+        valid = false;
+      } else {
+        clearError("email");
+      }
+
+      if (!mobile) {
+        showError("mobile", "Mobile number cannot be blank.");
+        valid = false;
+      } else if (!/^[6-9]\d{9}$/.test(mobile)) {
+        showError("mobile", "Mobile must be 10 digits starting with 6-9.");
+        valid = false;
+      } else {
+        clearError("mobile");
+      }
+
+      if (!password) {
+        showError("password", "Password cannot be blank.");
+        valid = false;
+      } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/.test(password)) {
+        showError("password", "Password must be at least 6 chars with upper, lower, number & special char.");
+        valid = false;
+      } else {
+        clearError("password");
+      }
+
+      return valid;
+    }
+
+    window.registerUser = async function(event) {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const mobile = document.getElementById("mobile").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!validateFields(name, email, mobile, password)) return;
+
+      const snapshot = await get(ref(db, 'registrations'));
+      let duplicate = false;
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        Object.values(data).forEach(entry => {
+          if (
+            entry.email.toLowerCase() === email.toLowerCase() ||
+            entry.mobile === mobile
+          ) {
+            duplicate = true;
+          }
+        });
+      }
+
+      if (duplicate) {
+        alert("A user with this email or mobile already exists.");
+        return;
+      }
+
+      const applicationNumber = "APP" + Date.now().toString().slice(-6);
+
+      await set(ref(db, 'registrations/' + applicationNumber), {
+        name,
+        email,
+        mobile,
+        password,
+        applicationNumber
+      });
+
+      document.getElementById("appNumberDisplay").textContent = applicationNumber;
+      document.getElementById("successBox").style.display = "block";
+      document.getElementById("registerForm").reset();
+    };
+
+    window.togglePassword = function () {
+      const passwordInput = document.getElementById("password");
+      const toggleIcon = document.getElementById("toggle-icon");
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleIcon.textContent = "🙈";
+      } else {
+        passwordInput.type = "password";
+        toggleIcon.textContent = "👁️";
+      }
+    };
+  </script>
+</head>
+<body>
+  <header>
+    <h1>SR Security & Placement Service</h1>
+    <p>Candidate Registration Portal</p>
+  </header>
+
+  <div class="main-box">
+    <div class="container">
+      <div class="login"><div id="log-h">New Candidate Registration</div></div>
+      <form id="registerForm" onsubmit="registerUser(event)">
+        <label>Full Name *</label>
+        <input type="text" id="name" placeholder="Enter full name" />
+        <span id="name-error" class="error-message"></span>
+
+        <label>Email *</label>
+        <input type="email" id="email" placeholder="Enter email" />
+        <span id="email-error" class="error-message"></span>
+
+        <label>Mobile Number *</label>
+        <div class="mobile-group">
+          <select disabled><option selected>+91</option></select>
+          <input type="text" id="mobile" maxlength="10" placeholder="1234567890" />
+        </div>
+        <span id="mobile-error" class="error-message"></span>
+
+        <label>Password *</label>
+        <div class="password-toggle">
+          <input type="password" id="password" placeholder="Create password" />
+          <span class="toggle-icon" id="toggle-icon" onclick="togglePassword()">👁️</span>
+        </div>
+        <span id="password-error" class="error-message"></span>
+
+        <button type="submit">Register</button>
+      </form>
+
+      <div id="successBox" style="display: none;">
+        <strong>🎉 Registered Successfully!</strong>
+        <p>Your Application Number is: <span id="appNumberDisplay"></span></p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="login"><div id="log-h">Already Registered?</div></div>
+      <div id="new">
+        <a href="LoginPage.html">Go to Login</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 SR Security & Placement Service. All Rights Reserved.
+  </footer>
+</body>
+</html>
