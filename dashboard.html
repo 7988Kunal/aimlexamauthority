@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - AIML Authority</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 0 10px #ccc;
+      border-radius: 10px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+      background: #222;
+      color: #fff;
+    }
+
+    .logo-periphery img {
+      height: 50px;
+    }
+
+    .tag {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 20px;
+      padding: 15px;
+      background: #e9f0ff;
+      border-radius: 10px;
+    }
+
+    .profile-card img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px solid #007bff;
+    }
+
+    .profile-info {
+      font-size: 16px;
+      text-align: left;
+    }
+
+    .profile-info b {
+      color: #007bff;
+    }
+
+    .user-section-heading {
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin: 10px 0 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #222;
+      color: #fff;
+      margin-top: 50px;
+    }
+  </style>
+<!--  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+    authDomain: "srsecurity-9d62a.firebaseapp.com",
+    projectId: "srsecurity-9d62a",
+    storageBucket: "srsecurity-9d62a.appspot.com",
+    messagingSenderId: "801710662719",
+    appId: "1:801710662719:web:376de7896a74f5db03848a",
+    measurementId: "G-E54Z2TN27J",
+    databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  window.onload = async function () {
+    const params = new URLSearchParams(window.location.search);
+    const appNo = params.get('app');
+    const profileName = document.getElementById("profileName");
+    const profileApp = document.getElementById("profileApp");
+    const profileImage = document.getElementById("profileImage");
+    const display = document.getElementById("userHeading");
+
+    if (!appNo) {
+      display.innerHTML = "<p>❌ Invalid access. Application number missing.</p>";
+      return;
+    }
+
+    document.getElementById("applicationNo").value = appNo;
+
+    const userRef = ref(db, 'registrations/' + appNo);
+    const snapshot = await get(userRef);
+
+    if (!snapshot.exists()) {
+      display.innerHTML = "<p>❌ User not found.</p>";
+      return;
+    }
+
+    const data = snapshot.val();
+    profileName.textContent = data.name;
+    profileApp.textContent = appNo;
+    profileImage.src = data.profilePhoto || "https://via.placeholder.com/100?text=Photo";
+
+    display.innerHTML = `<div class="user-section-heading">📌 Complete your remaining steps for your application number</div>`;
+    
+  // After profile data loaded in window.onload
+const statusRef = ref(db, 'registrations/' + appNo + '/status');
+const statusSnap = await get(statusRef);
+
+if (statusSnap.exists() && statusSnap.val().completed) {
+  // Lock entire form
+  document.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+  document.getElementById("step1Form").style.display = "none";
+  document.getElementById("step2Form").style.display = "none";
+  document.getElementById("step3Form").style.display = "none";
+  document.getElementById("step4Form").style.display = "none";
+  document.getElementById("step5Form").style.display = "none";
+
+  document.getElementById("successMessage").style.display = "block";
+  document.getElementById("successMessage2").style.display = "block";
+  document.getElementById("successMessage3").style.display = "block";
+  document.getElementById("successMessage4").style.display = "block";
+  document.getElementById("finalSuccess").style.display = "block";
+}
+  };
+
+  // Step 1
+  window.validateStep1 = function () {
+    const fname = document.getElementById("fatherName").value.trim();
+    const dob = document.getElementById("dob").value;
+    const gender = document.getElementById("gender").value;
+    document.getElementById("proceedBtn").disabled = !(fname && dob && gender);
+  };
+
+  window.submitStep1 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const fname = document.getElementById("fatherName").value.trim();
+    const dob = document.getElementById("dob").value;
+    const gender = document.getElementById("gender").value;
+
+    const infoRef = ref(db, 'registrations/' + appNo + '/personalInfo');
+    await set(infoRef, {
+      fatherName: fname,
+      dob: dob,
+      gender: gender
+    });
+
+    document.getElementById("step1Form").style.display = "none";
+    document.getElementById("successMessage").style.display = "block";
+    document.getElementById("step2Form").style.display = "block";
+  };
+
+  // Step 2
+  window.toggleAreaField = function () {
+    const areaType = document.getElementById("areaType").value;
+    document.getElementById("villageField").style.display = areaType === "Rural" ? "block" : "none";
+    document.getElementById("cityField").style.display = areaType === "Urban" ? "block" : "none";
+    validateStep2();
+  };
+
+  window.validateStep2 = function () {
+    const state = document.getElementById("state").value.trim();
+    const district = document.getElementById("district").value.trim();
+    const areaType = document.getElementById("areaType").value;
+    const village = document.getElementById("village").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const pincode = document.getElementById("pincode").value.trim();
+    const isValidPin = /^\d{6}$/.test(pincode);
+
+    const isValid = state && district && areaType && isValidPin &&
+      ((areaType === "Rural" && village) || (areaType === "Urban" && city));
+
+    document.getElementById("proceedBtn2").disabled = !isValid;
+  };
+
+  window.submitStep2 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const country = document.getElementById("country").value;
+    const state = document.getElementById("state").value.trim();
+    const district = document.getElementById("district").value.trim();
+    const areaType = document.getElementById("areaType").value;
+    const village = document.getElementById("village").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const pincode = document.getElementById("pincode").value.trim();
+
+    const locationRef = ref(db, 'registrations/' + appNo + '/locationInfo');
+    await set(locationRef, {
+      country,
+      state,
+      district,
+      areaType,
+      locationName: areaType === "Rural" ? village : city,
+      pincode
+    });
+
+    document.getElementById("step2Form").style.display = "none";
+    document.getElementById("successMessage2").style.display = "block";
+    document.getElementById("step3Form").style.display = "block"; // ✅ Show Step 3
+    document.getElementById("successMessage3").style.display = "none";
+    document.getElementById("step4Form").style.display = "none"; // ❌ Don't show Step 4 yet
+  };
+
+window.togglePermanentAddress = function () {
+  const tempAddress = document.getElementById("tempAddress").value.trim();
+  const isChecked = document.getElementById("sameAddress").checked;
+  const permField = document.getElementById("permAddress");
+
+  if (isChecked) {
+    permField.value = tempAddress;
+    permField.disabled = true;
+  } else {
+    permField.disabled = false;
+    permField.value = "";
+  }
+
+  validateStep3(); // revalidate
+};
+
+window.validateStep3 = function () {
+  const aadhar = document.getElementById("aadhaar").value.trim();
+  const tempAddress = document.getElementById("tempAddress").value.trim();
+  const permAddress = document.getElementById("permAddress").value.trim();
+  const isValidAadhar = /^\d{12}$/.test(aadhar);
+
+  const isValid = isValidAadhar && tempAddress && permAddress;
+  document.getElementById("proceedBtn3").disabled = !isValid;
+};
+
+window.submitStep3 = async function () {
+  const appNo = document.getElementById("applicationNo").value;
+  const aadhar = document.getElementById("aadhaar").value.trim();
+  const tempAddress = document.getElementById("tempAddress").value.trim();
+  const permAddress = document.getElementById("permAddress").value.trim();
+
+  const step3Ref = ref(db, 'registrations/' + appNo + '/addressIdentity');
+  await set(step3Ref, {
+    aadhaar,
+    tempAddress,
+    permAddress
+  });
+
+  document.getElementById("step3Form").style.display = "none";
+  document.getElementById("successMessage3").style.display = "block";
+  document.getElementById("step4Form").style.display = "block";
+};
+
+  // Step 4
+  window.validateStep4 = function () {
+    const profileFile = document.getElementById("profileUpload").files[0];
+    const aadharFile = document.getElementById("aadharUpload").files[0];
+    const validTypes = ['image/jpeg', 'image/png'];
+    const isValid = profileFile && aadharFile &&
+      validTypes.includes(profileFile.type) &&
+      validTypes.includes(aadharFile.type);
+    document.getElementById("proceedBtn4").disabled = !isValid;
+  };
+
+  window.submitStep4 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const profileFile = document.getElementById("profileUpload").files[0];
+    const aadharFile = document.getElementById("aadharUpload").files[0];
+
+    const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/ddi4esj3t/auto/upload';
+    const UPLOAD_PRESET = 'unsigned_upload';
+
+    const uploadToCloudinary = async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+
+      const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      return data.secure_url;
+    };
+
+    try {
+      const profileURL = await uploadToCloudinary(profileFile);
+      const aadharURL = await uploadToCloudinary(aadharFile);
+
+      const docRef = ref(db, 'registrations/' + appNo + '/documents');
+      await set(docRef, {
+        profilePhoto: profileURL,
+        aadharPhoto: aadharURL
+      });
+
+      document.getElementById("profileImage").src = profileURL;
+      document.getElementById("step4Form").style.display = "none";
+      document.getElementById("step5Form").style.display = "block"; // Show Step 5
+    } catch (error) {
+      alert("❌ Error uploading documents: " + error.message);
+    }
+  };
+  window.validateStep5 = function () {
+  const isChecked = document.getElementById("declarationCheck").checked;
+  document.getElementById("finalSubmitBtn").disabled = !isChecked;
+};
+
+window.submitStep5 = async function () {
+  const appNo = document.getElementById("applicationNo").value;
+
+  // Save submission status
+  const statusRef = ref(db, 'registrations/' + appNo + '/status');
+  await set(statusRef, {
+    completed: true,
+    timestamp: new Date().toISOString()
+  });
+
+  // Lock all fields (disable inputs/buttons)
+  document.querySelectorAll("input, select, button").forEach(el => {
+    el.disabled = true;
+  });
+
+  document.getElementById("step5Form").style.display = "none";
+  document.getElementById("finalSuccess").style.display = "block";
+};
+</script>-->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+    authDomain: "srsecurity-9d62a.firebaseapp.com",
+    projectId: "srsecurity-9d62a",
+    storageBucket: "srsecurity-9d62a.appspot.com",
+    messagingSenderId: "801710662719",
+    appId: "1:801710662719:web:376de7896a74f5db03848a",
+    measurementId: "G-E54Z2TN27J",
+    databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  window.onload = async function () {
+    const params = new URLSearchParams(window.location.search);
+    const appNo = params.get('app');
+    const profileName = document.getElementById("profileName");
+    const profileApp = document.getElementById("profileApp");
+    const profileImage = document.getElementById("profileImage");
+    const display = document.getElementById("userHeading");
+
+    if (!appNo) {
+      display.innerHTML = "<p>❌ Invalid access. Application number missing.</p>";
+      return;
+    }
+
+    document.getElementById("applicationNo").value = appNo;
+
+    const userRef = ref(db, 'registrations/' + appNo);
+    const snapshot = await get(userRef);
+
+    if (!snapshot.exists()) {
+      display.innerHTML = "<p>❌ User not found.</p>";
+      return;
+    }
+
+    const data = snapshot.val();
+    profileName.textContent = data.name;
+    profileApp.textContent = appNo;
+    profileImage.src = data.profilePhoto || "https://via.placeholder.com/100?text=Photo";
+    display.innerHTML = `<div class="user-section-heading">📌 Complete your remaining steps for your application number</div>`;
+
+    const statusRef = ref(db, 'registrations/' + appNo + '/status');
+    const statusSnap = await get(statusRef);
+
+    if (statusSnap.exists() && statusSnap.val().completed) {
+      document.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+      ["step1Form", "step2Form", "step3Form", "step4Form", "step5Form"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+      });
+      ["successMessage", "successMessage2", "successMessage3", "successMessage4", "finalSuccess"].forEach(id => {
+        document.getElementById(id).style.display = "block";
+      });
+    }
+  };
+
+  // Step 1
+  window.validateStep1 = function () {
+    const fname = document.getElementById("fatherName").value.trim();
+    const dob = document.getElementById("dob").value;
+    const gender = document.getElementById("gender").value;
+    document.getElementById("proceedBtn").disabled = !(fname && dob && gender);
+  };
+
+  window.submitStep1 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const fname = document.getElementById("fatherName").value.trim();
+    const dob = document.getElementById("dob").value;
+    const gender = document.getElementById("gender").value;
+
+    await set(ref(db, 'registrations/' + appNo + '/personalInfo'), { fatherName: fname, dob, gender });
+
+    document.getElementById("step1Form").style.display = "none";
+    document.getElementById("successMessage").style.display = "block";
+    document.getElementById("step2Form").style.display = "block";
+  };
+
+  // Step 2
+  window.toggleAreaField = function () {
+    const areaType = document.getElementById("areaType").value;
+    document.getElementById("villageField").style.display = areaType === "Rural" ? "block" : "none";
+    document.getElementById("cityField").style.display = areaType === "Urban" ? "block" : "none";
+    validateStep2();
+  };
+
+  window.validateStep2 = function () {
+    const state = document.getElementById("state").value.trim();
+    const district = document.getElementById("district").value.trim();
+    const areaType = document.getElementById("areaType").value;
+    const village = document.getElementById("village").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const pincode = document.getElementById("pincode").value.trim();
+    const isValidPin = /^\d{6}$/.test(pincode);
+
+    const isValid = state && district && areaType && isValidPin &&
+      ((areaType === "Rural" && village) || (areaType === "Urban" && city));
+
+    document.getElementById("proceedBtn2").disabled = !isValid;
+  };
+
+  window.submitStep2 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const country = document.getElementById("country").value;
+    const state = document.getElementById("state").value.trim();
+    const district = document.getElementById("district").value.trim();
+    const areaType = document.getElementById("areaType").value;
+    const village = document.getElementById("village").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const pincode = document.getElementById("pincode").value.trim();
+
+    await set(ref(db, 'registrations/' + appNo + '/locationInfo'), {
+      country,
+      state,
+      district,
+      areaType,
+      locationName: areaType === "Rural" ? village : city,
+      pincode
+    });
+
+    document.getElementById("step2Form").style.display = "none";
+    document.getElementById("successMessage2").style.display = "block";
+    document.getElementById("step3Form").style.display = "block";
+  };
+
+  // Step 3
+  window.togglePermanentAddress = function () {
+    const tempAddress = document.getElementById("tempAddress").value.trim();
+    const isChecked = document.getElementById("sameAddress").checked;
+    const permField = document.getElementById("permAddress");
+
+    if (isChecked) {
+      permField.value = tempAddress;
+      permField.disabled = true;
+    } else {
+      permField.disabled = false;
+      permField.value = "";
+    }
+    validateStep3();
+  };
+
+  window.validateStep3 = function () {
+    const aadhar = document.getElementById("aadhaar").value.trim();
+    const tempAddress = document.getElementById("tempAddress").value.trim();
+    const permAddress = document.getElementById("permAddress").value.trim();
+    const isValidAadhar = /^\d{12}$/.test(aadhar);
+    document.getElementById("proceedBtn3").disabled = !(isValidAadhar && tempAddress && permAddress);
+  };
+
+  window.submitStep3 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const aadhar = document.getElementById("aadhaar").value.trim();
+    const tempAddress = document.getElementById("tempAddress").value.trim();
+    const permAddress = document.getElementById("permAddress").value.trim();
+
+    await set(ref(db, 'registrations/' + appNo + '/addressIdentity'), { aadhaar, tempAddress, permAddress });
+
+    document.getElementById("step3Form").style.display = "none";
+    document.getElementById("successMessage3").style.display = "block";
+    document.getElementById("step4Form").style.display = "block";
+  };
+
+  // Step 4
+  window.validateStep4 = function () {
+    const profileFile = document.getElementById("profileUpload").files[0];
+    const aadharFile = document.getElementById("aadharUpload").files[0];
+    const validTypes = ['image/jpeg', 'image/png'];
+    const isValid = profileFile && aadharFile &&
+      validTypes.includes(profileFile.type) &&
+      validTypes.includes(aadharFile.type);
+    document.getElementById("proceedBtn4").disabled = !isValid;
+  };
+
+  window.submitStep4 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    const profileFile = document.getElementById("profileUpload").files[0];
+    const aadharFile = document.getElementById("aadharUpload").files[0];
+
+    const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/ddi4esj3t/auto/upload';
+    const UPLOAD_PRESET = 'unsigned_upload';
+
+    const uploadToCloudinary = async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+      const response = await fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: formData });
+      if (!response.ok) throw new Error('Upload failed');
+      const data = await response.json();
+      return data.secure_url;
+    };
+
+    try {
+      const profileURL = await uploadToCloudinary(profileFile);
+      const aadharURL = await uploadToCloudinary(aadharFile);
+      await set(ref(db, 'registrations/' + appNo + '/documents'), {
+        profilePhoto: profileURL,
+        aadharPhoto: aadharURL
+      });
+      document.getElementById("profileImage").src = profileURL;
+      document.getElementById("step4Form").style.display = "none";
+      document.getElementById("step5Form").style.display = "block";
+    } catch (error) {
+      alert("❌ Error uploading documents: " + error.message);
+    }
+  };
+
+  // Step 5
+  window.validateStep5 = function () {
+    const isChecked = document.getElementById("declarationCheck").checked;
+    document.getElementById("finalSubmitBtn").disabled = !isChecked;
+  };
+
+  window.submitStep5 = async function () {
+    const appNo = document.getElementById("applicationNo").value;
+    await set(ref(db, 'registrations/' + appNo + '/status'), {
+      completed: true,
+      timestamp: new Date().toISOString()
+    });
+    document.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+    document.getElementById("step5Form").style.display = "none";
+    document.getElementById("finalSuccess").style.display = "block";
+  };
+</script>
+
+</head>
+<body>
+  <div class="head">
+    <div class="logo-periphery">
+      <img src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AI & ML Authority logo" />
+    </div>
+    <div class="tag">AIML Authority</div>
+  </div>
+
+  <div class="container">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <img id="profileImage" src="https://via.placeholder.com/100?text=Photo" alt="Profile" />
+      <div class="profile-info">
+        <div><b>Name:</b> <span id="profileName">Loading...</span></div>
+        <div><b>Application No:</b> <span id="profileApp">---</span></div>
+      </div>
+    </div>
+
+    <!-- Heading -->
+    <div id="userHeading" style="margin-bottom: 20px;">Loading...</div>
+
+    <!-- Hidden App No -->
+    <input type="hidden" id="applicationNo" />
+
+    <!-- Step 1 Form -->
+    <form id="step1Form">
+      <h3>Step 1: Personal Information</h3>
+
+      <label for="fatherName">Father's Name</label>
+      <input type="text" id="fatherName" placeholder="Enter Father's Name" oninput="validateStep1()" required />
+
+      <label for="dob">Date of Birth</label>
+      <input type="date" id="dob" oninput="validateStep1()" required />
+
+      <label for="gender">Gender</label>
+      <select id="gender" onchange="validateStep1()" required>
+        <option value="">-- Select Gender --</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+
+      <button type="button" id="proceedBtn" onclick="submitStep1()" disabled>Proceed</button>
+    </form>
+
+    <div id="successMessage" class="success" style="display: none;">
+      ✅ Step 1 completed successfully. Your personal information has been saved.
+    </div>
+
+    <!-- Step 2 Form -->
+    <form id="step2Form" style="display: none;">
+      <h3>Step 2: Location Information</h3>
+
+      <label for="country">Country</label>
+      <select id="country" onchange="validateStep2()">
+        <option value="India" selected>India</option>
+        <option value="United States">United States</option>
+        <option value="Canada">Canada</option>
+        <option value="Australia">Australia</option>
+        <option value="United Kingdom">United Kingdom</option>
+      </select>
+
+      <label for="state">State</label>
+      <input type="text" id="state" placeholder="Enter State" oninput="validateStep2()" required />
+
+      <label for="district">District</label>
+      <input type="text" id="district" placeholder="Enter District" oninput="validateStep2()" required />
+
+      <label for="areaType">Area Type</label>
+      <select id="areaType" onchange="toggleAreaField()" required>
+        <option value="">-- Select Area Type --</option>
+        <option value="Rural">Rural</option>
+        <option value="Urban">Urban</option>
+      </select>
+
+      <div id="villageField" style="display:none;">
+        <label for="village">Village Name</label>
+        <input type="text" id="village" placeholder="Enter Village Name" oninput="validateStep2()" />
+      </div>
+
+      <div id="cityField" style="display:none;">
+        <label for="city">City/Town Name</label>
+        <input type="text" id="city" placeholder="Enter City or Town Name" oninput="validateStep2()" />
+      </div>
+
+      <label for="pincode">Pincode</label>
+      <input type="text" id="pincode" placeholder="Enter 6-digit Pincode" oninput="validateStep2()" maxlength="6" required />
+
+      <button type="button" id="proceedBtn2" onclick="submitStep2()" disabled>Proceed</button>
+    </form>
+
+    <div id="successMessage2" class="success" style="display: none;">
+      ✅ Step 2 completed successfully. Your location information has been saved.
+    </div>
+<!-- Step 3 -->
+<div id="step3Form" style="display: none;">
+  <h3>Step 3: Address & Identity</h3>
+
+  <label>Aadhaar Card Number</label>
+  <input type="text" id="aadhaar" maxlength="12" oninput="validateStep3()" />
+
+  <label>Temporary Address</label>
+  <input type="text" id="tempAddress" oninput="togglePermanentAddress()" />
+
+  <label>
+    <input type="checkbox" id="sameAddress" onclick="togglePermanentAddress()" />
+    Permanent Address same as Temporary
+  </label>
+
+  <label>Permanent Address</label>
+  <input type="text" id="permAddress" oninput="validateStep3()" />
+
+  <button id="proceedBtn3" onclick="submitStep3()" disabled>Submit</button>
+</div>
+
+<div id="successMessage3" style="display: none; color:green;font-weight:bold;margin-top:15px;">
+  ✅ Step 3  completed successfully. Your address & identity type Number has been saved.</div>
+  <!-- Step 4 Form -->
+<form id="step4Form" style="display: none;" enctype="multipart/form-data">
+  <h3>Step 4: Upload Documents</h3>
+
+  <label for="profileUpload">Upload Profile Photo (JPEG/PNG)</label>
+  <input type="file" id="profileUpload" accept="image/png, image/jpeg" onchange="validateStep4()" required />
+
+  <label for="aadharUpload">Upload Aadhaar Card Photo (JPEG/PNG)</label>
+  <input type="file" id="aadharUpload" accept="image/png, image/jpeg" onchange="validateStep4()" required />
+
+  <button type="button" id="proceedBtn4" onclick="submitStep4()" disabled>Upload & Finish</button>
+</form>
+
+<div id="successMessage4" class="success" style="display: none;">
+  ✅ Step 4 completed successfully. Your documents have been uploaded.
+ </div>
+ <!-- Step 5 -->
+<div id="step5Form" style="display: none;">
+  <h3>Step 5: Final Declaration</h3>
+
+  <label>
+    <input type="checkbox" id="declarationCheck" onchange="validateStep5()" />
+    I declare that all information provided by me is true. If any information is found incorrect later, my candidature will be cancelled.
+  </label>
+
+  <button id="finalSubmitBtn" onclick="submitStep5()" disabled>Final Submit</button>
+</div>
+
+<div id="finalSuccess" style="display: none; color: green; font-weight: bold;">
+  ✅ All steps completed. Your application number is registered successfully.
+</div>
+</div>
+
+
+  <footer>
+    <main>AIML Authority &copy; 2025 All Rights Reserved.</main>
+  </footer>
+</body>
+</html>
