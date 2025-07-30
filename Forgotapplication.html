@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forgot Application Number - SR Security</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    header {
+      background-color: #0a1f44;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      color: #888;
+      background: #f5f5f5;
+    }
+
+    .main-box {
+      display: flex;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .login #log-h {
+      font-size: 22px;
+      font-weight: bold;
+      color: #0a1f44;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px 12px;
+      width: 100%;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    button {
+      padding: 12px;
+      width: 100%;
+      background-color: #0a1f44;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 25px;
+    }
+
+    button:hover {
+      background-color: #06132c;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 13px;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #e6ffed;
+      border-left: 4px solid #28a745;
+      border-radius: 6px;
+      display: none;
+      font-size: 15px;
+    }
+
+    #result strong {
+      color: #155724;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px 15px;
+      }
+
+      input {
+        font-size: 14px;
+      }
+
+      button {
+        font-size: 15px;
+      }
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.findAppNumber = async function (event) {
+      event.preventDefault();
+      const input = document.getElementById("searchInput").value.trim();
+      const errorBox = document.getElementById("error");
+      const resultBox = document.getElementById("result");
+      const appNoSpan = document.getElementById("appNumberFound");
+
+      if (!input) {
+        errorBox.textContent = "Please enter email, mobile or password.";
+        resultBox.style.display = "none";
+        return;
+      }
+
+      const snapshot = await get(ref(db, 'registrations'));
+      if (!snapshot.exists()) {
+        errorBox.textContent = "No records found.";
+        resultBox.style.display = "none";
+        return;
+      }
+
+      const data = snapshot.val();
+      let found = null;
+      Object.values(data).forEach(user => {
+        if (
+          user.email?.toLowerCase() === input.toLowerCase() ||
+          user.mobile === input ||
+          user.password === input
+        ) {
+          found = user.applicationNumber;
+        }
+      });
+
+      if (found) {
+        errorBox.textContent = "";
+        appNoSpan.textContent = found;
+        resultBox.style.display = "block";
+      } else {
+        errorBox.textContent = "No match found. Please check your input.";
+        resultBox.style.display = "none";
+      }
+    };
+  </script>
+</head>
+<body>
+  <header>
+    <h1>SR Security & Placement Service</h1>
+    <p>Forgot Application Number Portal</p>
+  </header>
+
+  <div class="main-box">
+    <div class="container">
+      <div class="login"><div id="log-h">Find Your Application Number</div></div>
+
+      <form onsubmit="findAppNumber(event)">
+        <label>Email / Mobile / Password *</label>
+        <input type="text" id="searchInput" placeholder="Enter any one registered detail" />
+        <button type="submit">Find Application Number</button>
+      </form>
+
+      <p id="error" class="error-message"></p>
+
+      <div id="result">
+        <strong>Your Application Number:</strong> <span id="appNumberFound" style="font-weight: bold;"></span><br/>
+        <span>Please save this number for login and password recovery.</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 SR Security & Placement Service. All Rights Reserved.
+  </footer>
+</body>
+</html>
