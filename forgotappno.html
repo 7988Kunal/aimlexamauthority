@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forgot Application Number - AIML Authority</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .error-message {
+      color: red;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #e6ffed;
+      border-left: 4px solid #28a745;
+      border-radius: 6px;
+      display: none;
+    }
+    #result strong {
+      color: #155724;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a",
+      measurementId: "G-E54Z2TN27J",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.findAppNumber = async function (event) {
+      event.preventDefault();
+      const input = document.getElementById("searchInput").value.trim();
+      const errorBox = document.getElementById("error");
+      const resultBox = document.getElementById("result");
+      const appNoSpan = document.getElementById("appNumberFound");
+
+      if (!input) {
+        errorBox.textContent = "Please enter email, mobile or password.";
+        resultBox.style.display = "none";
+        return;
+      }
+
+      const snapshot = await get(ref(db, 'registrations'));
+      if (!snapshot.exists()) {
+        errorBox.textContent = "No records found.";
+        resultBox.style.display = "none";
+        return;
+      }
+
+      const data = snapshot.val();
+      let found = null;
+      Object.values(data).forEach(user => {
+        if (
+          user.email?.toLowerCase() === input.toLowerCase() ||
+          user.mobile === input ||
+          user.password === input
+        ) {
+          found = user.applicationNumber;
+        }
+      });
+
+      if (found) {
+        errorBox.textContent = "";
+        appNoSpan.textContent = found;
+        resultBox.style.display = "block";
+      } else {
+        errorBox.textContent = "No match found. Please check your input.";
+        resultBox.style.display = "none";
+      }
+    };
+  </script>
+</head>
+<body>
+  <div class="head">
+    <div class="logo-periphery">
+      <img id="logo" src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AI & ML Authority logo" />
+    </div>
+    <div class="tag">AIML Authority</div>
+  </div>
+
+  <div class="Menu-bar">
+    <span class="burger" onclick="toggleMenu()">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </span>
+    <nav id="menuOptions" class="menu-options">
+      <a href="#">Home</a>
+      <a href="#">FAQs</a>
+      <a href="#">Contact</a>
+      <a href="#">Help</a>
+      <a href="#">Do & Don't</a>
+    </nav>
+  </div>
+
+  <div class="main-box">
+    <div class="container">
+      <div class="login"><div id="log-h">Forgot Application Number</div></div>
+      <form onsubmit="findAppNumber(event)">
+        <div class="log-part">
+          <label>Email / Mobile / Password <span>*</span></label>
+          <input type="text" id="searchInput" placeholder="Enter any one registered detail" />
+        </div>
+        <div class="log-part">
+          <button type="submit">Find Application Number</button>
+        </div>
+      </form>
+
+      <p id="error" class="error-message"></p>
+
+      <div id="result">
+        <strong>Your Application Number:</strong> <span id="appNumberFound" style="font-weight: bold;"></span><br/>
+        <span>Please save this number for login and password recovery.</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <main>AIML Authority &copy; 2025 All Rights Reserved.</main>
+  </footer>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById("menuOptions").classList.toggle("show");
+    }
+  </script>
+</body>
+</html>
