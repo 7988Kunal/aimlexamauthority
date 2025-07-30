@@ -1,139 +1,344 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-  <title>AIML Authority Login</title>
-  <link rel="stylesheet" href="style.css"/>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    const firebaseConfig = {
-  apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
-  authDomain: "srsecurity-9d62a.firebaseapp.com",
-  projectId: "srsecurity-9d62a",
-  storageBucket: "srsecurity-9d62a.appspot.com",
-  messagingSenderId: "801710662719",
-  appId: "1:801710662719:web:376de7896a74f5db03848a",
-  measurementId: "G-E54Z2TN27J",
-  databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"};
+  <title>SR Security & Placement Service</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-window.validateForm = async function(event) {
-  event.preventDefault();
-  const appNo = document.getElementById("appNo").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const captchaInput = document.getElementById("captchaInput").value.trim();
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      scroll-behavior: smooth;
+    }
 
-  if (!appNo || !password || !captchaInput) {
-    alert("All fields are required.");
-    return false;
-  }
+    header {
+      background: #001f4d;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
 
-  if (captchaInput !== currentCaptcha) {
-    alert("Invalid captcha. Please try again.");
-    generateCaptcha();
-    return false;
-  }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
 
-  const userRef = ref(db, 'registrations/' + appNo);
-  const snapshot = await get(userRef);
+    .logo i {
+      font-size: 1.8rem;
+      color: #ffce00;
+    }
 
-  if (!snapshot.exists()) {
-    alert("Application number not found.");
-    return false;
-  }
+    .logo h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
 
-  const userData = snapshot.val();
-  if (userData.password !== password) {
-    alert("Incorrect password.");
-    return false;
-  }
+    nav {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
 
-  window.location.href = `dashboard.html?app=${appNo}`;
-  return true;
-}
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+    }
 
-  </script>
+    nav a::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: #ffce00;
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #ffce00;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    .menu-toggle {
+      display: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+    }
+
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1581092919533-80b3ef694b4b') no-repeat center center/cover;
+      min-height: 60vh;
+      max-height: 75vh;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 1rem;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    .hero div {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .hero h2 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+    }
+
+    section {
+      padding: 3rem 2rem;
+    }
+
+    .services h3, .news h3, .about h3, .contact h3 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      color: #0a2a66;
+      text-align: center;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h4 {
+      color: #0a2a66;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .footer {
+      background: #0a2a66;
+      color: white;
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .contact-info {
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .business-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 2rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .business-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .business-info {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .business-info p {
+      margin-bottom: 0.8rem;
+      font-size: 1rem;
+    }
+
+    @media(max-width: 768px) {
+      nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #001f4d;
+        margin-top: 1rem;
+      }
+
+      nav.show {
+        display: flex;
+      }
+
+      nav a {
+        padding: 0.5rem 1rem;
+        width: 100%;
+        text-align: center;
+      }
+
+      .menu-toggle {
+        display: block;
+        color: white;
+      }
+
+      .hero h2 {
+        font-size: 2rem;
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .business-card {
+        flex-direction: column;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <div class="head">
-    <div class="logo-periphery">
-      <img id="logo" src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AI & ML Authority logo" />
+
+  <header>
+    <div class="logo">
+      <i class="fas fa-shield-alt"></i>
+      <h1>SR Security</h1>
     </div>
-    <div class="tag">AIML Authority</div>
-  </div>
-  <div class="Menu-bar">
-    <span class="burger" onclick="toggleMenu()">
-      <div class="line"></div>
-      <div class="line"></div>
-      <div class="line"></div>
-    </span>
-    <nav id="menuOptions" class="menu-options">
-      <a href="#">Home</a>
-      <a href="#">FAQs</a>
-      <a href="#">Contact</a>
-      <a href="#">Help</a>
-      <a href="#">Do & Don't</a>
+    <i class="fas fa-bars menu-toggle" onclick="toggleMenu()"></i>
+    <nav id="menu">
+      <a href="#services">Services</a>
+      <a href="#news">News</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
     </nav>
-  </div>
-  <div class="main-box">
-    <div class="container">
-      <div class="login"><div id="log-h">New Candidates Register Here</div></div>
-      <div id="new">
-        <a href="reg.html">New Candidate Registration</a>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h2>Your Safety, Our Priority</h2>
+      <p>SR Security & Placement Service provides industrial, corporate, and personal security solutions with trained staff and advanced surveillance.</p>
+    </div>
+  </section>
+
+  <section id="services" class="services" data-aos="fade-up">
+    <h3>Our Services</h3>
+    <div class="cards">
+      <div class="card">
+        <h4><i class="fas fa-video"></i> CCTV Surveillance</h4>
+        <p>24/7 high-definition monitoring with motion detection and storage.</p>
+      </div>
+      <div class="card">
+        <h4><i class="fas fa-shield-alt"></i> Guarding Services</h4>
+        <p>Professional security personnel for industrial and private premises.</p>
+      </div>
+      <div class="card">
+        <h4><i class="fas fa-building"></i> Corporate Security</h4>
+        <p>Full-service protection for offices including access control and visitor tracking.</p>
       </div>
     </div>
-    <div class="container">
-      <div class="login"><div id="log-h">Only Registered Login Here</div></div>
-      <form id="loginForm" onsubmit="return validateForm(event)">
-        <div class="log-part">
-          <label>Application Number <span>*</span></label>
-          <input type="text" id="appNo" placeholder="Enter application number" />
-        </div>
-        <div class="log-part">
-          <label>Password <span>*</span></label>
-          <input type="password" id="password" placeholder="Enter password" />
-        </div>
-        <div class="log-part">
-          <label>Captcha <span>*</span></label>
-          <div id="cap">
-            <div id="captchacode">aeS425</div>
-            <span id="refresh" onclick="generateCaptcha()">Refresh</span>
-          </div>
-          <input type="text" id="captchaInput" placeholder="Enter captcha code" />
-        </div>
-        <div class="log-part">
-          <button type="submit">Login</button>
-        </div>
-        <p>Forgot Application Number OR Password Click below link</p>
-        <button type="button" id="f1"><a href="forgotappno.html">Forgot Application No. ?</a></button>
-        <button type="button" id="f2"> <a href="forgot.html">Forgot Password ?</a></button>
-      </form>
+  </section>
+
+  <section id="news" class="news" data-aos="fade-right">
+    <h3>Latest News & Updates</h3>
+    <div class="cards">
+      <div class="card">
+        <h4>New Branch in Gurgaon</h4>
+        <p>We are expanding! Our Gurgaon branch is now operational.</p>
+      </div>
+      <div class="card">
+        <h4>Now Hiring 2025</h4>
+        <p>Apply for security, housekeeping, and supervisor positions before 31st August.</p>
+      </div>
+      <div class="card">
+        <h4>Tech Upgrade</h4>
+        <p>Now using AI for real-time threat detection and reporting systems.</p>
+      </div>
     </div>
+  </section>
+
+  <section id="about" class="about" data-aos="fade-left">
+    <h3>About SR Security</h3>
+    <p>
+      Founded by Ex-Army personnel, SR Security & Placement Service is committed to safety, discipline, and professionalism. We specialize in all kinds of industrial safety, housekeeping, gunmen, supervisors, and labor support.
+    </p>
+    <div class="business-card">
+      <img src="https://i.ibb.co/Gff7Jf82/IMG-20250730-170257.jpg" alt="Business Card Image" border="0">
+      <div class="business-info">
+        <p><strong>Contact:</strong> X-ARMY Rampal Sharma, Ravinder</p>
+        <p><strong>Phone:</strong> 88169-66336, 99912-54658, 98130-97593</p>
+        <p><strong>Email:</strong> sharma_rampal9@yahoo.com</p>
+        <p><strong>Address:</strong> Shop No. 1, Jain Chowk, Gali No. 8, Near Sunshine School, Sidharth Nagar, Panipat-132103, Haryana</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact" data-aos="zoom-in">
+    <h3>Contact Us</h3>
+    <div class="contact-info">
+      📍 Head Office: Shop No. 1, Jain Chowk, Gali No. 8, Near Sunshine School, Sidharth Nagar, Panipat-132103, Haryana<br>
+      📞 Phone: +91 99912-54658<br>
+      📧 Email: sharma_rampal@yahoo.com<br>
+      🌐 Website: www.srsecurity.com
+    </div>
+  </section>
+
+  <div class="footer">
+    &copy; 2025 SR Security & Placement Service | All Rights Reserved
   </div>
-  <footer>
-    <main>AIML Authority &copy; 2025 All Rights Reserved.</main>
-  </footer>
+
   <script>
-    let currentCaptcha = "aeS425";function generateCaptcha() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let captcha = '';
-  for (let i = 0; i < 6; i++) {
-    captcha += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  currentCaptcha = captcha;
-  document.getElementById('captchacode').innerText = captcha;
-}
-
-function toggleMenu() {
-  document.getElementById("menuOptions").classList.toggle("show");
-}
-
-window.onload = generateCaptcha;
-
+    function toggleMenu() {
+      const menu = document.getElementById('menu');
+      menu.classList.toggle('show');
+    }
+  </script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 1000, once: true });
   </script>
 </body>
 </html>
