@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login | SR Security</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+        url('https://img.freepik.com/free-photo/green-camouflage-pattern-cloth_53876-102405.jpg') no-repeat center center/cover;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .login-container {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+      animation: scaleUp 0.6s ease;
+    }
+    @keyframes scaleUp {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .login-container h2 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: #ffd700;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      outline: none;
+    }
+    button {
+      background-color: #ffd700;
+      color: #333;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background-color: #ffcc00;
+      transform: scale(1.05);
+    }
+    .error {
+      color: #ff4d4d;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      display: none;
+    }
+    @media (max-width: 480px) {
+      .login-container h2 {
+        font-size: 1.4rem;
+      }
+      input, button {
+        font-size: 0.95rem;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>🔐 Admin Login - SR SECURITY</h2>
+    <input type="password" id="adminPassword" placeholder="Enter Admin Code" />
+    <div class="error" id="errorMsg">Incorrect admin code</div>
+    <button onclick="loginAdmin()">Login</button>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a"
+    };
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.loginAdmin = async () => {
+      const inputPassword = document.getElementById('adminPassword').value.trim();
+      const errorDiv = document.getElementById('errorMsg');
+      const codeRef = ref(db, 'admin/password');
+
+      try {
+        const snapshot = await get(codeRef);
+        if (snapshot.exists() && snapshot.val() === inputPassword) {
+          localStorage.setItem('adminLoggedIn', 'true');
+          window.location.href = 'adminDashboard.html';
+        } else {
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error("Error checking password:", error);
+        errorDiv.innerText = 'Something went wrong';
+        errorDiv.style.display = 'block';
+      }
+    };
+  </script>
+</body>
+</html>
