@@ -111,7 +111,10 @@
 <body>
   <div class="login-container">
     <h2>🔐 Admin Login - SR SECURITY</h2>
-    <input type="password" id="adminPassword" placeholder="Enter Admin Code" />
+    <div style="position: relative;">
+  <input type="password" id="adminPassword" placeholder="Enter Admin Code" />
+  <span id="togglePassword" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#555;">👁️</span>
+</div>
     <div class="error" id="errorMsg">Incorrect admin code</div>
     <button onclick="loginAdmin()">Login</button>
   </div>
@@ -154,6 +157,15 @@ const firebaseConfig = {
         errorDiv.style.display = 'block';
       }
     };
+    // Toggle password visibility
+const passwordInput = document.getElementById('adminPassword');
+const togglePassword = document.getElementById('togglePassword');
+
+togglePassword.addEventListener('click', () => {
+  const isPassword = passwordInput.type === 'password';
+  passwordInput.type = isPassword ? 'text' : 'password';
+  togglePassword.textContent = isPassword ? '🙈' : '👁️'; // Change icon
+});
   </script>
 </body>
 </html>
