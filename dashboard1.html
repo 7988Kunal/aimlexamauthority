@@ -1,0 +1,859 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Candidate Dashboard - SR Security</title>
+    <script>
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+  });
+</script>
+<script>
+  document.onkeydown = function(e) {
+    if (
+      e.keyCode === 123 || // F12
+      (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
+      (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+    ) {
+      return false;
+    }
+  };
+</script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+    header {
+      background-color: #0a1f44;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }.dashboard-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  color: #0a1f44;
+  text-align: center;
+}
+
+.info {
+  margin-top: 30px;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.label {
+  font-weight: bold;
+  color: #555;
+}
+
+#logout {
+  margin-top: 40px;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background: #0a1f44;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#logout:hover {
+  background: #06132c;
+}
+
+.step-wrapper {
+  max-width: 600px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.08);
+}
+
+.progress-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.step {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #ccc;
+  color: white;
+  line-height: 35px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.step.active {
+  background: #0a1f44;
+}
+
+.step-box {
+  display: none;
+}
+
+.step-box.active {
+  display: block;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  outline:none;
+}
+input:hover,select:hover{
+  border:1px solid #13acfb;
+}
+.step-buttons, .button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.step-buttons button, .button-group button {
+  padding: 10px 20px;
+  background: #0a1f44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.step-buttons button:hover, .button-group button:hover {
+  background: #06132c;
+}
+
+.error-message {
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+}
+textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.approved {
+  color: green;
+}
+.rejected {
+  color: red;
+}
+.pending {
+  color: orange;
+}
+@media (max-width: 600px) {
+  .dashboard-container {
+    margin: 20px 10px;
+    padding: 20px;
+  }
+
+  .info {
+    font-size: 16px;
+  }
+}
+#aadhaarPreview a {
+  display: inline-block;
+  margin-top: 5px;
+  color: green;
+}
+
+#profilePreview img {
+  border: 2px solid #ccc;
+  padding: 3px;
+}
+  </style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+  authDomain: "srsecurity-9d62a.firebaseapp.com",
+  projectId: "srsecurity-9d62a",
+  storageBucket: "srsecurity-9d62a.appspot.com",
+  messagingSenderId: "801710662719",
+  appId: "1:801710662719:web:376de7896a74f5db03848a",
+  databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const urlParams = new URLSearchParams(window.location.search);
+const appNum = urlParams.get('app');
+/*const appNum = localStorage.getItem("ApplicationNumber"); // Or however you're storing it*/
+
+const dbRef = ref(db, 'registrations/' + appNum);
+get(dbRef).then((snapshot) => {
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    const status = data.status || "Pending"; // Default to pending if not set
+
+    const statusBox = document.getElementById("statusBox");
+    statusBox.innerHTML = `Status: <span class="${status.toLowerCase()}">${status}</span>`;
+  } else {
+    console.error("No data found for your application number");
+  }
+}).catch((error) => {
+  console.error("Error fetching data:", error);
+});
+if (!appNum) {
+  alert('Unauthorized access. Please login.');
+  localStorage.removeItem('appNumber');
+  window.location.href = 'LoginPage.html';
+} else {
+  localStorage.setItem('appNumber', appNum);
+  document.getElementById('userAppNumber').innerText = appNum;
+}
+
+let isFinalSubmitted = false;
+
+async function fetchAndShowUserName() {
+  const userRef = ref(db, `registrations/${appNum}`);
+  const snap = await get(userRef);
+  if (snap.exists()) {
+    const userData = snap.val();
+    const name = userData.name || "Candidate";
+    localStorage.setItem("userName", name);
+    document.getElementById("userName").innerText = name;
+  }
+}
+window.copyTempToPermanent = function () {
+  const isChecked = document.getElementById('sameAsTemp').checked;
+  const tempAddress = document.getElementById('tempAddress').value;
+  const permAddress = document.getElementById('permAddress');
+
+  if (isChecked) {
+    permAddress.value = tempAddress;
+    permAddress.disabled = true;
+  } else {
+    permAddress.disabled = false;
+  }
+};
+
+window.saveStep3Data = async function () {
+  if (isFinalSubmitted) return;
+
+  const aadhaar = document.getElementById('aadhaarNumber').value.trim();
+  const tempAddress = document.getElementById('tempAddress').value.trim();
+  const permAddress = document.getElementById('permAddress').value.trim();
+
+  let valid = true;
+
+  if (!/^\d{12}$/.test(aadhaar)) {
+    showError('aadhaarNumber', 'Enter valid 12-digit number');
+    valid = false;
+  } else clearError('aadhaarNumber');
+
+  if (tempAddress.length < 10) {
+    showError('tempAddress', 'Min 10 characters');
+    valid = false;
+  } else clearError('tempAddress');
+
+  if (permAddress.length < 10) {
+    showError('permAddress', 'Min 10 characters');
+    valid = false;
+  } else clearError('permAddress');
+
+  if (!valid) return;
+
+  try {
+    await update(ref(db, `registrations/${appNum}/step3`), {
+      aadhaarNumber: aadhaar,
+      tempAddress,
+      permAddress
+    });
+    alert('Step 3 saved');
+  } catch (err) {
+    alert('Error saving Step 3');
+    console.error(err);
+  }
+};
+
+async function loadStep3Data() {
+  const stepRef = ref(db, `registrations/${appNum}/step3`);
+  const snap = await get(stepRef);
+  if (snap.exists()) {
+    const data = snap.val();
+    document.getElementById('aadhaarNumber').value = data.aadhaarNumber || '';
+    document.getElementById('tempAddress').value = data.tempAddress || '';
+    document.getElementById('permAddress').value = data.permAddress || '';
+  }
+}
+async function loadStep1Data() {
+  const stepRef = ref(db, `registrations/${appNum}/step1`);
+  const snap = await get(stepRef);
+  if (snap.exists()) {
+    const data = snap.val();
+    document.getElementById('fatherName').value = data.fatherName || '';
+    document.getElementById('dob').value = data.dob || '';
+    document.getElementById('gender').value = data.gender || '';
+  }
+}
+
+async function loadStep2Data() {
+  const stepRef = ref(db, `registrations/${appNum}/step2`);
+  const snap = await get(stepRef);
+  if (snap.exists()) {
+    const data = snap.val();
+    document.getElementById('country').value = data.country || '';
+    document.getElementById('state').value = data.state || '';
+    document.getElementById('district').value = data.district || '';
+    document.getElementById('areaType').value = data.areaType || '';
+    toggleAreaInput();
+    if (data.areaType === 'rural') {
+      document.getElementById('village').value = data.location || '';
+    } else {
+      document.getElementById('town').value = data.location || '';
+    }
+    document.getElementById('pincode').value = data.pincode || '';
+  }
+}
+
+const checkFinalSubmission = async () => {
+  const finalRef = ref(db, `registrations/${appNum}/finalSubmitted`);
+  const snap = await get(finalRef);
+  isFinalSubmitted = snap.exists() && snap.val() === true;
+
+  if (isFinalSubmitted) {
+    disableAllInputs();
+  }
+};
+
+/*const disableAllInputs = () => {
+  const inputs = document.querySelectorAll('input, select, textarea, button');
+  inputs.forEach(el => {
+    if (el.id !== 'logoutBtn') el.disabled = true;
+  });
+
+  const msg = document.getElementById('finalMessage');
+  if (msg) {
+    msg.innerText = '✅ Final submission completed. Editing is locked.';
+    msg.style.display = 'block';
+  }
+};*/
+
+window.saveStep1 = async function () {
+  if (isFinalSubmitted) return;
+
+  const fatherName = document.getElementById('fatherName').value.trim();
+  const dob = document.getElementById('dob').value;
+  const gender = document.getElementById('gender').value;
+  const passwordInput = document.getElementById('setPassword');
+  const password = passwordInput ? passwordInput.value.trim() : null;
+
+  let valid = true;
+
+  if (fatherName.length < 3) { showError('fatherName', 'At least 3 characters'); valid = false; } else clearError('fatherName');
+  if (!dob) { showError('dob', 'Date of Birth required'); valid = false; } else clearError('dob');
+  if (!gender) { showError('gender', 'Gender required'); valid = false; } else clearError('gender');
+  if (passwordInput && (!password || password.length < 4)) {
+    showError('setPassword', 'Min 4 chars'); valid = false;
+  } else {
+    clearError('setPassword');
+  }
+
+  if (!valid) return;
+
+  try {
+    // Save step1 data under step1 node
+    await update(ref(db, `registrations/${appNum}/step1`), {
+      fatherName,
+      dob,
+      gender
+    });
+
+    // Save password at root level only if input exists
+    if (passwordInput) {
+      await update(ref(db, `registrations/${appNum}`), {
+        password
+      });
+    }
+
+    alert('Step 1 saved');
+  } catch (err) {
+    alert('Failed to save Step 1');
+    console.error(err);
+  }
+};
+window.saveStep2Data = async function () {
+  if (isFinalSubmitted) return;
+
+  const country = document.getElementById('country').value.trim();
+  const state = document.getElementById('state').value.trim();
+  const district = document.getElementById('district').value.trim();
+  const areaType = document.getElementById('areaType').value;
+  const village = document.getElementById('village').value.trim();
+  const town = document.getElementById('town').value.trim();
+  const pincode = document.getElementById('pincode').value.trim();
+
+  const nameRegex = /^[A-Za-z ]{3,}$/;
+  let valid = true;
+
+  if (!nameRegex.test(country)) { showError('country', 'Min 3 letters'); valid = false; } else clearError('country');
+  if (!nameRegex.test(state)) { showError('state', 'Min 3 letters'); valid = false; } else clearError('state');
+  if (!nameRegex.test(district)) { showError('district', 'Min 3 letters'); valid = false; } else clearError('district');
+  if (!areaType) { showError('areaType', 'Select area'); valid = false; } else clearError('areaType');
+  if (areaType === 'rural' && !nameRegex.test(village)) { showError('village', 'Min 3 letters'); valid = false; } else clearError('village');
+  if (areaType === 'urban' && !nameRegex.test(town)) { showError('town', 'Min 3 letters'); valid = false; } else clearError('town');
+  if (!/^[0-9]{6}$/.test(pincode)) { showError('pincode', '6-digit only'); valid = false; } else clearError('pincode');
+
+  if (!valid) return;
+
+  const location = areaType === 'rural' ? village : town;
+
+  try {
+    await update(ref(db, `registrations/${appNum}`), {
+      step2: {
+        country, state, district, areaType, location, pincode
+      }
+    });
+
+    alert('Step 2 saved');
+  } catch (err) {
+    alert('Error saving Step 2');
+    console.error(err);
+  }
+};
+window.uploadStep4Files = async function () {
+  if (isFinalSubmitted) return;
+
+  const aadhaarInput = document.getElementById('aadhaarFile');
+  const profileInput = document.getElementById('profilePhoto');
+
+  const aadhaarFile = aadhaarInput.files[0];
+  const profileFile = profileInput.files[0];
+
+  let valid = true;
+
+  if (!aadhaarFile) { showError('aadhaarFile', 'Required'); valid = false; } else clearError('aadhaarFile');
+  if (!profileFile) { showError('profilePhoto', 'Required'); valid = false; } else clearError('profilePhoto');
+
+  if (!valid) return;
+
+  try {
+    const aadhaarURL = await uploadFileToCloudinary(aadhaarFile);
+    const profileURL = await uploadFileToCloudinary(profileFile);
+
+    await update(ref(db, `registrations/${appNum}/step4`), {
+      aadhaarURL,
+      profileURL
+    });
+
+    document.getElementById('aadhaarPreview').innerHTML = `<a href="${aadhaarURL}" target="_blank">📄 Aadhaar Uploaded</a>`;
+    document.getElementById('profilePreview').innerHTML = `<img src="${profileURL}" alt="Profile" style="height:80px;border-radius:6px;margin-top:10px;" />`;
+
+    alert("Files uploaded successfully!");
+  } catch (err) {
+    alert("Upload failed. Try again.");
+    console.error(err);
+  }
+};
+window.completeFinalDeclaration = async function () {
+  try {
+    await update(ref(db, `registrations/${appNum}`), { finalSubmitted: true });
+    alert('Final Declaration Completed. Editing is locked.');
+    disableAllInputs();
+  } catch (err) {
+    alert('Error finalizing submission.');
+    console.error(err);
+  }
+};
+
+window.toggleAreaInput = function () {
+  const areaType = document.getElementById('areaType').value;
+  document.getElementById('village-group').style.display = areaType === 'rural' ? 'block' : 'none';
+  document.getElementById('town-group').style.display = areaType === 'urban' ? 'block' : 'none';
+};
+
+window.showError = function (id, message) {
+  const el = document.getElementById(id + '-error');
+  if (el) el.innerText = message;
+};
+
+window.clearError = function (id) {
+  const el = document.getElementById(id + '-error');
+  if (el) el.innerText = '';
+};
+
+let currentStep = 1;
+
+function showStep(stepNum) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`step${i}`)?.classList.remove('active');
+    document.querySelector(`.progress-bar .step:nth-child(${i})`)?.classList.remove('active');
+  }
+
+  document.getElementById(`step${stepNum}`)?.classList.add('active');
+  document.querySelector(`.progress-bar .step:nth-child(${stepNum})`)?.classList.add('active');
+  document.getElementById('finalMessage').style.display = stepNum === 5 ? 'block' : 'none';
+}
+
+window.goToNextStep = function () {
+  if (currentStep < 5) {
+    currentStep++;
+    showStep(currentStep);
+  }
+};
+
+window.goToPreviousStep = function () {
+  if (currentStep > 1) {
+    currentStep--;
+    showStep(currentStep);
+  }
+};
+const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/ddi4esj3t/auto/upload';
+const CLOUDINARY_UPLOAD_PRESET = 'unsigned_upload';
+
+async function uploadFileToCloudinary(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+  return data.secure_url;
+}
+window.logout = function () {
+  localStorage.removeItem('appNumber');
+  localStorage.removeItem('userName');
+  window.location.href = 'LoginPage.html';
+};
+async function loadReviewData() {
+  const rootRef = ref(db, `registrations/${appNum}`);
+  const snap = await get(rootRef);
+  if (!snap.exists()) return;
+
+  const data = snap.val();
+  const step1 = data.step1 || {};
+  const step2 = data.step2 || {};
+  const step3 = data.step3 || {};
+
+  document.getElementById('review-name').innerText = data.name || 'N/A';
+  document.getElementById('review-father').innerText = step1.fatherName || 'N/A';
+  document.getElementById('review-dob').innerText = step1.dob || 'N/A';
+  document.getElementById('review-gender').innerText = step1.gender || 'N/A';
+
+  document.getElementById('review-country').innerText = step2.country || 'N/A';
+  document.getElementById('review-state').innerText = step2.state || 'N/A';
+  document.getElementById('review-district').innerText = step2.district || 'N/A';
+  document.getElementById('review-area').innerText = step2.areaType || 'N/A';
+  document.getElementById('review-location').innerText = step2.location || 'N/A';
+  document.getElementById('review-pincode').innerText = step2.pincode || 'N/A';
+
+  document.getElementById('review-aadhaar').innerText = step3.aadhaarNumber || 'N/A';
+  document.getElementById('review-temp').innerText = step3.tempAddress || 'N/A';
+  document.getElementById('review-perm').innerText = step3.permAddress || 'N/A';
+}
+window.submitFinalDeclaration = async function () {
+  const confirm = document.getElementById('finalConfirm').checked;
+  if (!confirm) {
+    alert("Please confirm all details are correct.");
+    return;
+  }
+
+  try {
+    await update(ref(db, `registrations/${appNum}`), {
+      finalSubmitted: true
+    });
+
+    alert("🎉 Final submission successful. You can no longer make changes.");
+    disableAllInputs();
+  } catch (err) {
+    alert("Failed to finalize submission.");
+    console.error(err);
+  }
+};
+window.onload = async () => {
+  document.getElementById("userName").innerText = localStorage.getItem("userName") || "Candidate";
+  document.getElementById("userAppNumber").innerText = appNum;
+  async function loadStep4Data() {
+  const stepRef = ref(db, `registrations/${appNum}/step4`);
+  const snap = await get(stepRef);
+  if (snap.exists()) {
+    const data = snap.val();
+
+    if (data.aadhaarURL) {
+      document.getElementById('aadhaarPreview').innerHTML = `<a href="${data.aadhaarURL}" target="_blank">📄 Aadhaar Uploaded</a>`;
+    }
+
+    if (data.profileURL) {
+      document.getElementById('profilePreview').innerHTML = `<img src="${data.profileURL}" alt="Profile" style="height:80px;border-radius:6px;" />`;
+    }
+  }
+}
+  showStep(currentStep);
+  toggleAreaInput();
+  await fetchAndShowUserName();
+  await loadStep1Data();
+await loadStep2Data();
+await loadStep3Data();
+await loadStep4Data();
+await loadReviewData();
+await checkFinalSubmission();
+};
+/*const disableAllInputs = () => {
+  // Hide form sections (step-wrapper, logout)
+  const formWrapper = document.querySelector('.step-wrapper');
+  const logoutBtn = document.getElementById('logout');
+  if (formWrapper) formWrapper.style.display = 'none';
+  if (logoutBtn) logoutBtn.style.display = 'none';
+
+  // Show final success box
+  const finalBox = document.getElementById('finalSuccessBox');
+  finalBox.style.display = 'block';
+
+  // Set values in final message
+  document.getElementById('finalUserName').innerText = localStorage.getItem("userName") || "Candidate";
+  document.getElementById('finalAppNumber').innerText = localStorage.getItem("appNumber") || "---";
+};*/
+const disableAllInputs = () => {
+  // Disable all inputs except logout
+  const inputs = document.querySelectorAll('input, select, textarea, button');
+  inputs.forEach(el => {
+    if (el.id !== 'logoutBtn') el.disabled = false;
+  });
+
+  // Show final editing lock message
+  const msg = document.getElementById('finalMessage');
+  if (msg) {
+    msg.innerText = '✅ Final submission completed. Editing is locked.';
+    msg.style.display = 'block';
+  }
+
+  // Hide form content (step-wrapper and logout button if desired)
+  const formWrapper = document.querySelector('.step-wrapper');
+  if (formWrapper) formWrapper.style.display = 'none';
+
+  // Optional: Hide logout if needed
+  // document.getElementById('logoutBtn')?.style.display = 'none';
+
+  // Show final success confirmation box
+  const finalBox = document.getElementById('finalSuccessBox');
+  if (finalBox) {
+    finalBox.style.display = 'block';
+    document.getElementById('finalUserName').innerText = localStorage.getItem("userName") || "Candidate";
+    document.getElementById('finalAppNumber').innerText = localStorage.getItem("appNumber") || "---";
+  }
+};
+</script>
+
+
+</head>
+<body>
+<header>
+    <h1>SR Security & Placement Service</h1>
+    <p>Candidate Dashboard</p>
+  </header>  <div class="dashboard-container">
+      <p id="welcomeMessage">Welcome, <span id="userName">Candidate</span> (Application No.: <span id="userAppNumber"></span>)</p>
+<p id="finalMessage" style="color: green;">  <div id="statusBox" style="margin-top: 15px; font-weight: bold;"></div></p>
+    </div><div class="step-wrapper">
+  <h3 style="text-align:center; color:#0a1f44;">Complete Registration in 5 Steps</h3>
+  <div class="progress-bar">
+    <div class="step active">1</div>
+    <div class="step">2</div>
+    <div class="step">3</div>
+    <div class="step">4</div>
+    <div class="step">5</div>
+  </div>
+
+  <div id="step1" class="step-box active">
+    <h4>Step 1: Personal Information</h4>
+    <label>Father's Name *</label>
+    <input type="text" id="fatherName" placeholder="Enter father's name" />
+    <span id="fatherName-error" class="error-message"></span>
+
+    <label>Date of Birth *</label>
+    <input type="date" id="dob" />
+    <span id="dob-error" class="error-message"></span>
+
+    <label>Gender *</label>
+    <select id="gender">
+      <option value="">Select Gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+    <span id="gender-error" class="error-message"></span>
+
+    <div class="step-buttons">
+      <button disabled>Previous</button>
+      <button onclick="saveStep1()">Save</button>
+      <button onclick="goToNextStep()">Next</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step-box">
+    <h4>Step 2: Address Details</h4>
+    <label>Country *</label>
+    <input type="text" id="country" value="India" />
+    <span id="country-error" class="error-message"></span>
+
+    <label>State *</label>
+    <input type="text" id="state" />
+    <span id="state-error" class="error-message"></span>
+
+    <label>District *</label>
+    <input type="text" id="district" />
+    <span id="district-error" class="error-message"></span>
+
+    <label>Area Type *</label>
+    <select id="areaType" onchange="toggleAreaInput()">
+      <option value="">Select</option>
+      <option value="rural">Rural</option>
+      <option value="urban">Urban</option>
+    </select>
+    <span id="area-error" class="error-message"></span>
+
+    <div id="village-group" style="display:none;">
+      <label>Village Name *</label>
+      <input type="text" id="village" />
+      <span id="village-error" class="error-message"></span>
+    </div>
+
+    <div id="town-group" style="display:none;">
+      <label>Town/City Name *</label>
+      <input type="text" id="town" />
+      <span id="town-error" class="error-message"></span>
+    </div>
+
+    <label>Pincode *</label>
+    <input type="text" id="pincode" />
+    <span id="pincode-error" class="error-message"></span>
+
+    <div class="step-buttons">
+      <button onclick="goToPreviousStep()">Previous</button>
+      <button onclick="saveStep2Data()">Save</button>
+      <button onclick="goToNextStep()">Next</button>
+    </div>
+  </div>
+  <div id="step3" class="step-box">
+  <h4>Step 3: Identification & Address</h4>
+
+  <label>Aadhaar Card Number *</label>
+  <input type="text" id="aadhaarNumber" placeholder="Enter 12-digit Aadhaar number" />
+  <span id="aadhaarNumber-error" class="error-message"></span>
+
+  <label>Temporary Address *</label>
+  <textarea id="tempAddress" rows="3" placeholder="Enter temporary address"></textarea>
+  <span id="tempAddress-error" class="error-message"></span>
+
+  <label><input type="checkbox" id="sameAsTemp" onchange="copyTempToPermanent()"> Same as Temporary Address</label>
+
+  <label>Permanent Address *</label>
+  <textarea id="permAddress" rows="3" placeholder="Enter permanent address"></textarea>
+  <span id="permAddress-error" class="error-message"></span>
+
+  <div class="step-buttons">
+    <button onclick="goToPreviousStep()">Previous</button>
+    <button onclick="saveStep3Data()">Save</button>
+    <button onclick="goToNextStep()">Next</button>
+  </div>
+</div>
+<div id="step4" class="step-box">
+  <h4>Step 4: Upload Documents</h4>
+
+  <label>Upload Aadhaar Card (JPG/PNG/PDF)</label>
+  <input type="file" id="aadhaarFile" accept="image/*,.pdf" />
+  <div id="aadhaarPreview" style="margin-top:10px;"></div>
+  <span id="aadhaarFile-error" class="error-message"></span>
+
+  <label>Upload Profile Photo (JPG/PNG)</label>
+  <input type="file" id="profilePhoto" accept="image/*" />
+  <div id="profilePreview" style="margin-top:10px;"></div>
+  <span id="profilePhoto-error" class="error-message"></span>
+
+  <div class="step-buttons">
+    <button onclick="goToPreviousStep()">Previous</button>
+    <button onclick="uploadStep4Files()">Upload & Save</button>
+    <button onclick="goToNextStep()">Next</button>
+  </div>
+</div>
+<div id="step5" class="step-box">
+  <h4>Step 5: Final Declaration</h4>
+
+  <p>Please review your details before final submission. After this, you won't be able to edit anything.</p>
+
+  <div style="background:#f1f1f1; padding:15px; border-radius:6px; margin-top:20px;">
+    <p><strong>Name:</strong> <span id="review-name">...</span></p>
+    <p><strong>Father's Name:</strong> <span id="review-father">...</span></p>
+    <p><strong>DOB:</strong> <span id="review-dob">...</span></p>
+    <p><strong>Gender:</strong> <span id="review-gender">...</span></p>
+    <p><strong>Country:</strong> <span id="review-country">...</span></p>
+    <p><strong>State:</strong> <span id="review-state">...</span></p>
+    <p><strong>District:</strong> <span id="review-district">...</span></p>
+    <p><strong>Area:</strong> <span id="review-area">...</span></p>
+    <p><strong>Address:</strong> <span id="review-location">...</span></p>
+    <p><strong>Pincode:</strong> <span id="review-pincode">...</span></p>
+    <p><strong>Aadhaar Number:</strong> <span id="review-aadhaar">...</span></p>
+    <p><strong>Temporary Address:</strong> <span id="review-temp">...</span></p>
+    <p><strong>Permanent Address:</strong> <span id="review-perm">...</span></p>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <label><input type="checkbox" id="finalConfirm" /> I confirm that all details are correct.</label>
+  </div>
+
+  <div class="step-buttons">
+    <button onclick="goToPreviousStep()">Previous</button>
+    <button onclick="submitFinalDeclaration()">Submit Final Declaration</button>
+  </div>
+</div>
+  <!--<div id="finalMessage" style="display:none; background:#e6ffed; padding:15px; border-left:5px solid green; margin-top:20px; border-radius:6px;">
+    ✅ strong>Your application number is registered successfully.</strong>
+  </div>-->
+  <p id="finalMessage" style="display:none; color: green; font-weight: bold; margin: 20px auto; text-align: center;"></p>
+  <div id="finalSuccessBox" style="display:none; max-width:600px; margin:40px auto; background:#e6ffed; padding:30px; border-left:6px solid green; border-radius:10px; text-align:center;">
+  <h3 style="color:green;">✅ Submission Completed</h3>
+  <p><strong><span id="finalUserName">Candidate</span></strong> with Application No. <strong><span id="finalAppNumber">---</span></strong> is registered successfully.</p>
+</div>
+</div>
+
+<button id="logout" onclick="logout()">Logout</button>
+
+  </div>
+</body>
+</html>
