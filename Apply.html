@@ -347,19 +347,19 @@
         <span id="name-error" class="error-message"></span>
 
         <label>Email *</label>
-        <input type="email" id="email" placeholder="Enter email" />
+        <input autocomplete="off" type="email" id="email" placeholder="Enter email" />
         <span id="email-error" class="error-message"></span>
 
         <label>Mobile Number *</label>
         <div class="mobile-group">
           <select disabled><option selected>+91</option></select>
-          <input type="text" id="mobile" maxlength="10" placeholder="1234567890" />
+          <input type="text" id="mobile" maxlength="10" placeholder="Enter mobile number" />
         </div>
         <span id="mobile-error" class="error-message"></span>
 
         <label>Password *</label>
         <div class="password-toggle">
-          <input type="password" id="password" placeholder="Create password" />
+          <input autocomplete="off"type="password" id="password" placeholder="Create password" />
           <span class="toggle-icon" id="toggle-icon" onclick="togglePassword()">👁️</span>
         </div>
         <span id="password-error" class="error-message"></span>
