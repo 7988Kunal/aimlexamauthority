@@ -6,6 +6,22 @@
       window.location.href = 'Admin.html';
     }
   </script>
+   <script>
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+  });
+</script>
+<script>
+  document.onkeydown = function(e) {
+    if (
+      e.keyCode === 123 || // F12
+      (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
+      (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+    ) {
+      return false;
+    }
+  };
+</script>
   <meta charset="UTF-8" />
   <title>Admin Dashboard - SR Security</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -178,6 +194,15 @@
     font-family: "Segoe UI", sans-serif;
     background: url('https://i.pinimg.com/originals/5d/55/96/5d5596ed13364bb987b5c11d64d6f27b.jpg') no-repeat center center fixed;
     background-size: cover;
+     -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
   }
 
   header {
