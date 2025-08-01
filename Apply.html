@@ -343,7 +343,7 @@
       <div class="login"><div id="log-h">New Candidate Registration</div></div>
       <form id="registerForm" onsubmit="registerUser(event)">
         <label>Full Name *</label>
-        <input type="text" id="name" placeholder="Enter full name" />
+        <input autocomplete="off" type="text" id="name" placeholder="Enter full name" />
         <span id="name-error" class="error-message"></span>
 
         <label>Email *</label>
@@ -353,7 +353,7 @@
         <label>Mobile Number *</label>
         <div class="mobile-group">
           <select disabled><option selected>+91</option></select>
-          <input type="text" id="mobile" maxlength="10" placeholder="Enter mobile number" />
+          <input autocomplete="off"type="number" id="mobile" maxlength="10" placeholder="Enter mobile number" />
         </div>
         <span id="mobile-error" class="error-message"></span>
 
