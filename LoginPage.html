@@ -222,10 +222,13 @@
       <h2>Candidate Login</h2>
       <form id="loginForm" onsubmit="return validateForm(event)">
         <label for="appNo">Application Number *</label>
-        <input type="text" id="appNo" placeholder="Enter application number" />
+        <input autocomplete="off" type="text" id="appNo" placeholder="Enter application number" />
 
-        <label for="password">Password *</label>
-        <input type="password" id="password" placeholder="Enter password" />
+       <label for="password">Password *</label>
+       <div style="position: relative;">
+        <input autocomplete="off"type="password" id="password" placeholder="Enter password" />
+        <span id="togglePassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #555;">👁️</span>
+      </div>
 
         <label for="captchaInput">Captcha *</label>
         <div class="captcha-box">
@@ -247,7 +250,7 @@
     <div class="panel">
       <h2>New Registration</h2>
       <p>If you're a new applicant, please register using the button below.</p>
-      <a href="Apply.html">
+      <a href="apply.html">
         <button type="button">Register Now</button>
       </a>
       <p style="margin-top: 10px; font-size: 14px; color: gray;">
@@ -275,5 +278,15 @@
 
     window.onload = generateCaptcha;
   </script>
+  <script>
+  const passwordInput = document.getElementById('password');
+  const togglePassword = document.getElementById('togglePassword');
+
+  togglePassword.addEventListener('click', () => {
+    const isHidden = passwordInput.type === 'password';
+    passwordInput.type = isHidden ? 'text' : 'password';
+    togglePassword.textContent = isHidden ? '🙈' : '👁️';
+  });
+</script>
 </body>
 </html>
