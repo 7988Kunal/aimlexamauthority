@@ -519,7 +519,7 @@
 
     const modal = document.getElementById("imgModal");
     const modalImage = document.getElementById("modalImage");
-
+  let currentlyViewedAppNo = null;
     const getStatus = user => {
       if (user?.step4?.profileURL && user?.step4?.aadhaarURL) return "Registered";
       if (user?.step1 || user?.step2 || user?.step3) return "Pending";
@@ -569,7 +569,7 @@
       totalCount.innerText = `Total Candidates: ${count}`;
     }
 
-    function showDetails(user) {
+/*    function showDetails(user) {
       detailSection.style.display = "block";
       detailsBody.innerHTML = "";
 
@@ -612,7 +612,59 @@
       });
 
       window.scrollTo({ top: detailSection.offsetTop, behavior: "smooth" });
+    }*/
+    function showDetails(user) {
+  // If the same user is clicked again, toggle visibility
+  if (currentlyViewedAppNo === user.applicationNumber) {
+    detailSection.style.display = "none";
+    currentlyViewedAppNo = null;
+    return;
+  }
+
+  currentlyViewedAppNo = user.applicationNumber; // update tracker
+  detailSection.style.display = "block";
+  detailsBody.innerHTML = "";
+
+  const fields = [
+    ["Name", user.name],
+    ["Father Name", user.step1?.fatherName],
+    ["DOB", user.step1?.dob],
+    ["Gender", user.step1?.gender],
+    ["Mobile", user.mobile],
+    ["Email", user.email],
+    ["Aadhaar No", user.step3?.aadhaarNumber],
+    ["Address", user.step3?.permAddress],
+    ["Application No", user.applicationNumber],
+    ["Password", user.password],
+    ["Status", getStatus(user)],
+  ];
+
+  let serial = 1;
+  fields.forEach(([field, value]) => {
+    if (value) {
+      detailsBody.innerHTML += `<tr><td>${serial++}</td><td>${field}</td><td>${value}</td></tr>`;
     }
+  });
+
+  const profileURL = user.step4?.profileURL || user.step3?.profilePhoto;
+  const aadhaarURL = user.step4?.aadhaarURL || user.step3?.aadhaarPhoto;
+
+  if (profileURL) {
+    detailsBody.innerHTML += `<tr><td>${serial++}</td><td>Profile Photo</td><td><img class="zoomable" src="${profileURL}"></td></tr>`;
+  }
+  if (aadhaarURL) {
+    detailsBody.innerHTML += `<tr><td>${serial++}</td><td>Aadhaar Photo</td><td><img class="zoomable" src="${aadhaarURL}"></td></tr>`;
+  }
+
+  document.querySelectorAll('.zoomable').forEach(img => {
+    img.onclick = () => {
+      modal.style.display = "flex";
+      modalImage.src = img.src;
+    };
+  });
+
+  window.scrollTo({ top: detailSection.offsetTop, behavior: "smooth" });
+}
 
     onValue(ref(db, "registrations"), snapshot => {
       const data = snapshot.val() || {};
@@ -682,6 +734,18 @@
         alert("Update failed: " + err.message);
       });
   });
+</script>
+<script>
+  // Auto logout when the page is closed or reloaded
+  window.addEventListener("beforeunload", function () {
+    localStorage.removeItem("adminLoggedIn");
+  });
+</script>
+<script>
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.go(1);
+  };
 </script>
 </body>
 </html>
