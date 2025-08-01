@@ -457,6 +457,8 @@
     <h3>Edit Candidate</h3>
     <form id="editForm">
       <input type="hidden" id="editKey" />
+      <label>Apply For:</label><br>
+      <input type="text" id="editApplyFor" /><br><br>
       <label>Name:</label><br>
       <input type="text" id="editName" required /><br><br>
 
@@ -486,14 +488,164 @@
     </form>
   </div>
 </div>
-  <script>
+<script>
     function logout() {
       localStorage.removeItem('adminLoggedIn');
       window.location.href = 'Admin.html';
     }
   </script>
-
   <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+    authDomain: "srsecurity-9d62a.firebaseapp.com",
+    databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com",
+    projectId: "srsecurity-9d62a",
+    storageBucket: "srsecurity-9d62a.appspot.com",
+    messagingSenderId: "801710662719",
+    appId: "1:801710662719:web:376de7896a74f5db03848a"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const dashboard = document.getElementById("dashboard");
+  const searchInput = document.getElementById("searchInput");
+  const statusFilter = document.getElementById("statusFilter");
+  const totalCount = document.getElementById("totalCount");
+  const detailSection = document.getElementById("detail-section");
+  const detailsBody = document.getElementById("details-body");
+
+  const modal = document.getElementById("imgModal");
+  const modalImage = document.getElementById("modalImage");
+  let currentlyViewedAppNo = null;
+
+  const getStatus = user => {
+    if (user?.step4?.profileURL && user?.step4?.aadhaarURL) return "Registered";
+    if (user?.step1 || user?.step2 || user?.step3) return "Pending";
+    return "Failed";
+  };
+
+  function renderData(data) {
+    dashboard.innerHTML = "";
+    let count = 0;
+    const search = searchInput.value.toLowerCase();
+    const selectedStatus = statusFilter.value;
+
+    Object.entries(data).forEach(([key, user]) => {
+      const status = getStatus(user);
+      const matchesStatus = selectedStatus === "All" || status === selectedStatus;
+      const matchesSearch = (user.name || "").toLowerCase().includes(search)
+        || (user.applicationNumber || "").toLowerCase().includes(search)
+        || (user.mobile || "").toLowerCase().includes(search);
+
+      if (matchesSearch && matchesStatus) {
+        count++;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-header">
+            <span>${user.name || "Unnamed"} (${user.applicationNumber || "No App No"})</span>
+            <div class="actions">
+              <button class="view">View</button>
+              <button class="edit">Edit</button>
+              <button class="delete">Delete</button>
+            </div>
+          </div>
+        `;
+
+        card.querySelector(".view").onclick = () => showDetails(user);
+        card.querySelector(".edit").onclick = () => openEditModal(user, key);
+        card.querySelector(".delete").onclick = () => {
+          if (confirm("Are you sure you want to delete this record?")) {
+            remove(ref(db, "registrations/" + key));
+          }
+        };
+
+        dashboard.appendChild(card);
+      }
+    });
+
+    totalCount.innerText = `Total Candidates: ${count}`;
+  }
+
+  function showDetails(user) {
+    // Toggle details section
+    if (currentlyViewedAppNo === user.applicationNumber) {
+      detailSection.style.display = "none";
+      currentlyViewedAppNo = null;
+      return;
+    }
+
+    currentlyViewedAppNo = user.applicationNumber;
+    detailSection.style.display = "block";
+    detailsBody.innerHTML = "";
+
+    const fields = [
+      ["Name", user.name],
+      ["Father Name", user.step1?.fatherName],
+      ["DOB", user.step1?.dob],
+      ["Gender", user.step1?.gender],
+      ["Mobile", user.mobile],
+      ["Email", user.email],
+      ["Apply For", user.applyFor], // ✅ Added this line to show applied post
+      ["Aadhaar No", user.step3?.aadhaarNumber],
+      ["Address", user.step3?.permAddress],
+      ["Application No", user.applicationNumber],
+      ["Password", user.password],
+      ["Status", getStatus(user)],
+    ];
+
+    let serial = 1;
+    fields.forEach(([field, value]) => {
+      if (value) {
+        detailsBody.innerHTML += `<tr><td>${serial++}</td><td>${field}</td><td>${value}</td></tr>`;
+      }
+    });
+
+    const profileURL = user.step4?.profileURL || user.step3?.profilePhoto;
+    const aadhaarURL = user.step4?.aadhaarURL || user.step3?.aadhaarPhoto;
+
+    if (profileURL) {
+      detailsBody.innerHTML += `<tr><td>${serial++}</td><td>Profile Photo</td><td><img class="zoomable" src="${profileURL}"></td></tr>`;
+    }
+    if (aadhaarURL) {
+      detailsBody.innerHTML += `<tr><td>${serial++}</td><td>Aadhaar Photo</td><td><img class="zoomable" src="${aadhaarURL}"></td></tr>`;
+    }
+
+    document.querySelectorAll('.zoomable').forEach(img => {
+      img.onclick = () => {
+        modal.style.display = "flex";
+        modalImage.src = img.src;
+      };
+    });
+
+    window.scrollTo({ top: detailSection.offsetTop, behavior: "smooth" });
+  }
+
+  onValue(ref(db, "registrations"), snapshot => {
+    const data = snapshot.val() || {};
+    renderData(data);
+  });
+
+  searchInput.addEventListener("input", () => {
+    onValue(ref(db, "registrations"), snapshot => {
+      const data = snapshot.val() || {};
+      renderData(data);
+    });
+  });
+
+  statusFilter.addEventListener("change", () => {
+    onValue(ref(db, "registrations"), snapshot => {
+      const data = snapshot.val() || {};
+      renderData(data);
+    });
+  });
+</script>
+
+  <!--<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -569,50 +721,6 @@
       totalCount.innerText = `Total Candidates: ${count}`;
     }
 
-/*    function showDetails(user) {
-      detailSection.style.display = "block";
-      detailsBody.innerHTML = "";
-
-      const fields = [
-        ["Name", user.name],
-        ["Father Name", user.step1?.fatherName],
-        ["DOB", user.step1?.dob],
-        ["Gender", user.step1?.gender],
-        ["Mobile", user.mobile],
-        ["Email", user.email],
-        ["Aadhaar No", user.step3?.aadhaarNumber],
-        ["Address", user.step3?.permAddress],
-        ["Application No", user.applicationNumber],
-        ["Password", user.password],
-        ["Status", getStatus(user)],
-      ];
-
-      let serial = 1;
-      fields.forEach(([field, value]) => {
-        if (value) {
-          detailsBody.innerHTML += `<tr><td>${serial++}</td><td>${field}</td><td>${value}</td></tr>`;
-        }
-      });
-
-      const profileURL = user.step4?.profileURL || user.step3?.profilePhoto;
-      const aadhaarURL = user.step4?.aadhaarURL || user.step3?.aadhaarPhoto;
-
-      if (profileURL) {
-        detailsBody.innerHTML += `<tr><td>${serial++}</td><td>Profile Photo</td><td><img class="zoomable" src="${profileURL}"></td></tr>`;
-      }
-      if (aadhaarURL) {
-        detailsBody.innerHTML += `<tr><td>${serial++}</td><td>Aadhaar Photo</td><td><img class="zoomable" src="${aadhaarURL}"></td></tr>`;
-      }
-
-      document.querySelectorAll('.zoomable').forEach(img => {
-        img.onclick = () => {
-          modal.style.display = "flex";
-          modalImage.src = img.src;
-        };
-      });
-
-      window.scrollTo({ top: detailSection.offsetTop, behavior: "smooth" });
-    }*/
     function showDetails(user) {
   // If the same user is clicked again, toggle visibility
   if (currentlyViewedAppNo === user.applicationNumber) {
@@ -684,11 +792,12 @@
         renderData(data);
       });
     });
-  </script>
+  </script>-->
   <script>
   function openEditModal(user, key) {
     document.getElementById("editKey").value = key;
     document.getElementById("editName").value = user.name || "";
+    document.getElementById('editApplyFor').value = user.applyFor || "";
     document.getElementById("editFatherName").value = user.step1?.fatherName || "";
     document.getElementById("editDOB").value = user.step1?.dob || "";
     document.getElementById("editGender").value = user.step1?.gender || "";
@@ -712,6 +821,7 @@
       name: document.getElementById("editName").value,
       mobile: document.getElementById("editMobile").value,
       email: document.getElementById("editEmail").value,
+      applyFor: document.getElementById('editApplyFor').value,
       step1: {
         fatherName: document.getElementById("editFatherName").value,
         dob: document.getElementById("editDOB").value,
