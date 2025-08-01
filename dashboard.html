@@ -631,7 +631,7 @@ const disableAllInputs = () => {
   // Disable all inputs except logout
   const inputs = document.querySelectorAll('input, select, textarea, button');
   inputs.forEach(el => {
-    if (el.id !== 'logoutBtn') el.disabled = true;
+    if (el.id !== 'logoutBtn') el.disabled = false;
   });
 
   // Show final editing lock message
