@@ -228,7 +228,7 @@
       document.getElementById(`${id}-error`).innerText = '';
     }
 
-    function validateFields(name, email, mobile, password) {
+/*    function validateFields(name, email, mobile, password) {
       let valid = true;
 
       if (!name) {
@@ -272,7 +272,62 @@
       }
 
       return valid;
-    }
+    }*/
+    function validateFields(name, email, mobile, password) {
+  let valid = true;
+
+  const applyFor = document.getElementById("applyFor").value;
+
+  if (!applyFor) {
+    showError("applyFor", "Please select a role.");
+    valid = false;
+  } else {
+    clearError("applyFor");
+  }
+
+  // Existing validations below...
+  if (!name) {
+    showError("name", "Name cannot be blank.");
+    valid = false;
+  } else if (!/^[a-zA-Z ]{3,}$/.test(name)) {
+    showError("name", "Full Name must be at least 3 letters.");
+    valid = false;
+  } else {
+    clearError("name");
+  }
+
+  if (!email) {
+    showError("email", "Email cannot be blank.");
+    valid = false;
+  } else if (!/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+    showError("email", "Invalid email format.");
+    valid = false;
+  } else {
+    clearError("email");
+  }
+
+  if (!mobile) {
+    showError("mobile", "Mobile number cannot be blank.");
+    valid = false;
+  } else if (!/^[6-9]\d{9}$/.test(mobile)) {
+    showError("mobile", "Mobile must be 10 digits starting with 6-9.");
+    valid = false;
+  } else {
+    clearError("mobile");
+  }
+
+  if (!password) {
+    showError("password", "Password cannot be blank.");
+    valid = false;
+  } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/.test(password)) {
+    showError("password", "Password must be at least 6 chars with upper, lower, number & special char.");
+    valid = false;
+  } else {
+    clearError("password");
+  }
+
+  return valid;
+}
 
     window.registerUser = async function(event) {
       event.preventDefault();
@@ -281,7 +336,7 @@
       const email = document.getElementById("email").value.trim();
       const mobile = document.getElementById("mobile").value.trim();
       const password = document.getElementById("password").value.trim();
-
+      const applyFor = document.getElementById("applyFor").value;
       if (!validateFields(name, email, mobile, password)) return;
 
       const snapshot = await get(ref(db, 'registrations'));
@@ -311,6 +366,7 @@
         email,
         mobile,
         password,
+        applyFor,
         applicationNumber
       });
 
@@ -342,8 +398,16 @@
     <div class="container">
       <div class="login"><div id="log-h">New Candidate Registration</div></div>
       <form id="registerForm" onsubmit="registerUser(event)">
+        <label>Apply For *</label>
+        <select id="applyFor">
+  <option value="">-- Select Role --</option>
+  <option value="Security Guard">Security Guard</option>
+  <option value="Supervisor">Supervisor</option>
+  <option value="Gunmen">Gunmen</option>
+</select>
+<span id="applyFor-error" class="error-message"></span>
         <label>Full Name *</label>
-        <input autocomplete="off" type="text" id="name" placeholder="Enter full name" />
+        <input type="text" id="name" placeholder="Enter full name" />
         <span id="name-error" class="error-message"></span>
 
         <label>Email *</label>
@@ -353,7 +417,7 @@
         <label>Mobile Number *</label>
         <div class="mobile-group">
           <select disabled><option selected>+91</option></select>
-          <input autocomplete="off"type="number" id="mobile" maxlength="10" placeholder="Enter mobile number" />
+          <input type="text" id="mobile" maxlength="10" placeholder="Enter mobile number" />
         </div>
         <span id="mobile-error" class="error-message"></span>
 
