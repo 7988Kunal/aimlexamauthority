@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feedback | SR Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #001f4d;
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo i {
+      color: #ffce00;
+      font-size: 1.8rem;
+    }
+
+    .logo h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 3rem auto;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0a2a66;
+      margin-bottom: 1.5rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+    }
+
+    input, select, textarea {
+      padding: 0.7rem;
+      font-size: 1rem;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      background-color: #f2f2f2;
+      transition: 0.3s ease;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      background-color: #e6f0ff;
+      box-shadow: 0 0 0 2px #0a2a66;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .optional {
+      font-weight: normal;
+      font-size: 0.85rem;
+      color: gray;
+    }
+
+    button {
+      padding: 0.8rem;
+      font-size: 1rem;
+      background-color: #0a2a66;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0047b3;
+    }
+
+    .footer {
+      background: #0a2a66;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 1.5rem 1rem;
+        padding: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <i class="fas fa-shield-alt"></i>
+      <h1>SR Security & Placement Services</h1>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Feedback Form</h2>
+    <form id="feedbackForm">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="Enter your name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number <span class="optional">(optional)</span></label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter phone number" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email <span class="optional">(optional)</span></label>
+        <input type="email" id="email" name="email" placeholder="Enter email address" />
+      </div>
+
+      <div class="form-group">
+        <label for="category">Feedback Category</label>
+        <select id="category" name="category" required>
+          <option value="">Select category</option>
+          <option value="service">Service</option>
+          <option value="recruitment">Recruitment</option>
+          <option value="general">General Query</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Your Message</label>
+        <textarea id="message" name="message" placeholder="Write your feedback..." required></textarea>
+      </div>
+
+      <button type="submit">Submit Feedback</button>
+    </form>
+  </div>
+
+  <div class="footer">
+    &copy; 2025 SR Security & Placement Service | All Rights Reserved
+  </div>
+
+  <!-- Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <!-- Firebase App + Database -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    document.getElementById("feedbackForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const category = document.getElementById("category").value;
+      const message = document.getElementById("message").value.trim();
+
+      const feedbackData = {
+        name,
+        phone,
+        email,
+        category,
+        message,
+        approved: false,
+        timestamp: new Date().toISOString()
+      };
+
+      const feedbackRef = ref(db, 'feedbacks');
+      const newFeedbackRef = push(feedbackRef);
+
+      set(newFeedbackRef, feedbackData)
+        .then(() => {
+          alert("Thank you for your feedback!");
+          document.getElementById("feedbackForm").reset();
+        })
+        .catch(error => {
+          console.error("Error submitting feedback:", error);
+          alert("Error submitting feedback. Please try again.");
+        });
+    });
+  </script>
+</body>
+</html>
