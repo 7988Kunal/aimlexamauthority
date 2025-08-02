@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report Technical Issue | SR Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #f0f4f8;
+  color: #333;
+}
+
+header {
+  background-color: #001f4d;
+  color: #fff;
+  padding: 1rem 2rem;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.container {
+  max-width: 600px;
+  margin: 3rem auto;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+h2 {
+  text-align: center;
+  color: #0a2a66;
+  margin-bottom: 1.5rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+input, textarea, select {
+  padding: 0.7rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f2f2f2;
+  transition: 0.3s ease;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  background-color: #e6f0ff;
+  box-shadow: 0 0 0 2px #0a2a66;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.optional {
+  font-weight: normal;
+  font-size: 0.85rem;
+  color: gray;
+}
+
+button {
+  padding: 0.8rem;
+  font-size: 1rem;
+  background-color: #0a2a66;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: #0047b3;
+}
+
+.footer {
+  background: #0a2a66;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 1.5rem 1rem;
+    padding: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+}
+
+  </style>
+</head>
+<body>  <header>
+    <h1>Report a Technical Issue</h1>
+  </header>  <div class="container">
+    <h2>Grievance or Error Report</h2>
+    <form id="techForm">
+      <div class="form-group">
+        <label for="name">Your Name <span>*</span></label>
+        <input type="text" id="name" required />
+      </div><div class="form-group">
+    <label for="contactType">Select Contact Method <span>*</span></label>
+    <select id="contactType" required>
+      <option value="">-- Select --</option>
+      <option value="phone">Phone</option>
+      <option value="email">Email</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="phoneGroup" style="display:none;">
+    <label for="phone">Phone Number <span>*</span></label>
+    <input type="tel" id="phone" />
+  </div>
+
+  <div class="form-group" id="emailGroup" style="display:none;">
+    <label for="email">Email <span>*</span></label>
+    <input type="email" id="email" />
+  </div>
+
+  <div class="form-group">
+    <label for="problemArea">Where did the issue occur? <span>*</span></label>
+    <input type="text" id="problemArea" placeholder="e.g. Homepage, Job Form, Login page" required />
+  </div>
+
+  <div class="form-group">
+    <label for="description">Describe the problem <span>*</span></label>
+    <textarea id="description" placeholder="Explain what went wrong..." required></textarea>
+  </div>
+
+  <button type="submit">Submit Issue</button>
+</form>
+
+  </div>  <div class="footer">
+    &copy; 2025 SR Security & Placement Service | All Rights Reserved
+  </div>  <!-- Firebase App + Database -->  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const contactType = document.getElementById("contactType");
+    const phoneGroup = document.getElementById("phoneGroup");
+    const emailGroup = document.getElementById("emailGroup");
+
+    contactType.addEventListener("change", () => {
+      if (contactType.value === "phone") {
+        phoneGroup.style.display = "flex";
+        emailGroup.style.display = "none";
+      } else if (contactType.value === "email") {
+        phoneGroup.style.display = "none";
+        emailGroup.style.display = "flex";
+      } else {
+        phoneGroup.style.display = "none";
+        emailGroup.style.display = "none";
+      }
+    });
+
+    document.getElementById("techForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const contactTypeVal = contactType.value;
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const problemArea = document.getElementById("problemArea").value.trim();
+      const description = document.getElementById("description").value.trim();
+
+      if ((contactTypeVal === "phone" && !phone) || (contactTypeVal === "email" && !email)) {
+        alert("Please fill out your selected contact method.");
+        return;
+      }
+
+      const issueData = {
+        name,
+        phone: contactTypeVal === "phone" ? phone : "",
+        email: contactTypeVal === "email" ? email : "",
+        problemArea,
+        description,
+        category: "technical-issue",
+        approved: false,
+        timestamp: new Date().toISOString()
+      };
+
+      const issueRef = ref(db, 'technical_issues');
+      const newIssueRef = push(issueRef);
+
+      set(newIssueRef, issueData)
+        .then(() => {
+          alert("Thank you! Your issue has been reported.");
+          document.getElementById("techForm").reset();
+          phoneGroup.style.display = "none";
+          emailGroup.style.display = "none";
+        })
+        .catch(error => {
+          console.error("Submission error:", error);
+          alert("Error submitting your issue. Please try again.");
+        });
+    });
+  </script></body>
+</html>
