@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rate & Review | SR Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #001f4d;
+      color: #fff;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 3rem auto;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0a2a66;
+      margin-bottom: 1.5rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background-color: #f2f2f2;
+      margin-top: 10px;
+      transition: 0.3s ease;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      background-color: #e6f0ff;
+      box-shadow: 0 0 0 2px #0a2a66;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 1rem 0;
+      flex-direction: row-reverse;
+    }
+
+    .stars input {
+      display: none;
+    }
+
+    .stars label {
+      font-size: 30px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .stars label:hover,
+    .stars label:hover ~ label,
+    .stars input:checked ~ label {
+      color: #f0c330;
+    }
+
+    button {
+      background-color: #0a2a66;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0047b3;
+    }
+
+    .comment-box, .reply-box {
+      background-color: #f8f9fa;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
+
+    .reply-box {
+      margin-left: 2rem;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      color: #007bff;
+      margin-right: 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .actions button:hover {
+      text-decoration: underline;
+    }
+
+    small {
+      color: #777;
+    }
+
+    #ratingsSummary {
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+
+      .stars label {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Rate & Review</h1>
+  </header>
+
+  <div class="container">
+    <h2>SR Security Feedback</h2>
+    <input type="text" id="username" placeholder="Your Name" required />
+    
+    <div class="stars">
+      <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+      <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+      <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+      <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+      <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+    </div>
+
+    <button onclick="submitRating()">Submit Rating</button>
+
+    <textarea id="commentText" placeholder="Write your comment here..." required></textarea>
+    <button onclick="submitComment()">Submit Comment</button>
+  </div>
+
+  <div class="container" id="ratingsSummary"></div>
+  <div class="container" id="commentsSection"></div>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+    authDomain: "srsecurity-9d62a.firebaseapp.com",
+    databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com",
+    projectId: "srsecurity-9d62a",
+    storageBucket: "srsecurity-9d62a.appspot.com",
+    messagingSenderId: "801710662719",
+    appId: "1:801710662719:web:376de7896a74f5db03848a"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const ratingsRef = ref(db, "ratings");
+  const commentsRef = ref(db, "comments");
+
+  window.submitRating = async () => {
+    const username = document.getElementById("username").value.trim();
+    const rating = document.querySelector('input[name="rating"]:checked')?.value;
+    if (!username || !rating) return alert("Please enter your name and rating.");
+
+    const userRef = ref(db, `ratings/${username}`);
+    const snap = await get(userRef);
+    if (snap.exists()) return alert("You've already rated.");
+
+    await set(userRef, {
+      username,
+      rating: parseInt(rating),
+      timestamp: Date.now()
+    });
+
+    alert("Thanks for your rating!");
+    loadRatings();
+  };
+
+  window.submitComment = async () => {
+    const username = document.getElementById("username").value.trim();
+    const text = document.getElementById("commentText").value.trim();
+    if (!username || !text) return alert("Name and comment required.");
+
+    await push(commentsRef, {
+      username,
+      text,
+      timestamp: Date.now(),
+      likes: 0,
+      likedBy: {},
+      replies: {}
+    });
+
+    document.getElementById("commentText").value = "";
+  };
+
+  function renderComment(data, id, isReply = false, parentId = null) {
+    const div = document.createElement("div");
+    div.className = isReply ? "reply-box" : "comment-box";
+
+    const you = document.getElementById("username").value.trim();
+    const likeCount = data.likes || 0;
+    const liked = data.likedBy?.[you];
+
+    const replyCount = data.replies ? Object.keys(data.replies).length : 0;
+
+    div.innerHTML = `
+      <strong>${data.username}</strong>
+      <small>${new Date(data.timestamp).toLocaleString()}</small>
+      <p>${data.text}</p>
+      <div class="actions">
+        <button onclick="toggleLike('${id}', ${isReply}, '${parentId}')">
+          👍 ${liked ? "Unlike" : "Like"} (${likeCount})
+        </button>
+        ${data.username === you ? `
+          <button onclick="editComment('${id}', ${isReply}, '${parentId}')">✏️ Edit</button>
+          <button onclick="deleteComment('${id}', ${isReply}, '${parentId}')">🗑️ Delete</button>
+        ` : ""}
+        ${!isReply ? `
+          <button onclick="toggleReplyBox('${id}')">💬 Reply</button>
+          ${replyCount > 0 ? `<button onclick="toggleReplies('${id}')">🔽 View ${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}</button>` : ""}
+        ` : ""}
+      </div>
+      <div id="replyInput-${id}" style="display:none; margin-top:10px;">
+        <textarea id="replyText-${id}" placeholder="Write a reply..." rows="2"></textarea>
+        <button onclick="submitReply('${id}')">Reply</button>
+      </div>
+      <div id="replies-${id}" style="margin-top:10px;"></div>
+    `;
+    return div;
+  }
+
+  window.toggleLike = async (id, isReply, parentId) => {
+    const username = document.getElementById("username").value.trim();
+    if (!username) return alert("Enter your name to like/unlike.");
+
+    const path = isReply
+      ? `comments/${parentId}/replies/${id}`
+      : `comments/${id}`;
+
+    const nodeRef = ref(db, path);
+    const snap = await get(nodeRef);
+    if (!snap.exists()) return;
+
+    const data = snap.val();
+    const liked = data.likedBy?.[username];
+
+    const updates = {
+      likes: (data.likes || 0) + (liked ? -1 : 1),
+      likedBy: {
+        ...(data.likedBy || {})
+      }
+    };
+
+    if (liked) delete updates.likedBy[username];
+    else updates.likedBy[username] = true;
+
+    await update(nodeRef, updates);
+  };
+
+  window.editComment = async (id, isReply, parentId) => {
+    const newText = prompt("Edit your comment:");
+    if (newText) {
+      const path = isReply
+        ? `comments/${parentId}/replies/${id}`
+        : `comments/${id}`;
+      await update(ref(db, path), { text: newText });
+    }
+  };
+
+  window.deleteComment = async (id, isReply, parentId) => {
+    const path = isReply
+      ? `comments/${parentId}/replies/${id}`
+      : `comments/${id}`;
+    await remove(ref(db, path));
+  };
+
+  window.toggleReplyBox = function (commentId) {
+    const replyDiv = document.getElementById(`replyInput-${commentId}`);
+    replyDiv.style.display = replyDiv.style.display === "none" ? "block" : "none";
+  };
+
+  window.submitReply = async function (commentId) {
+    const username = document.getElementById("username").value.trim();
+    const replyText = document.getElementById(`replyText-${commentId}`).value.trim();
+    if (!username || !replyText) return alert("Reply text and name required");
+
+    const replyRef = ref(db, `comments/${commentId}/replies`);
+    await push(replyRef, {
+      username,
+      text: replyText,
+      timestamp: Date.now(),
+      likes: 0,
+      likedBy: {}
+    });
+
+    document.getElementById(`replyText-${commentId}`).value = "";
+    document.getElementById(`replyInput-${commentId}`).style.display = "none";
+  };
+
+  window.toggleReplies = async function (commentId) {
+    const repliesDiv = document.getElementById(`replies-${commentId}`);
+    if (repliesDiv.hasChildNodes()) {
+      repliesDiv.innerHTML = "";
+      return;
+    }
+
+    const repliesRef = ref(db, `comments/${commentId}/replies`);
+    const snap = await get(repliesRef);
+    if (snap.exists()) {
+      const replies = snap.val();
+      for (const [rid, reply] of Object.entries(replies)) {
+        repliesDiv.appendChild(renderComment(reply, rid, true, commentId));
+      }
+    }
+  };
+
+  // Real-time listeners
+  onValue(ratingsRef, snap => {
+    const box = document.getElementById("ratingsSummary");
+    if (!snap.exists()) return box.innerHTML = "<p>No ratings yet.</p>";
+
+    const ratings = Object.values(snap.val());
+    const avg = (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1);
+    box.innerHTML = `
+      <h3>Average Rating: ${avg} ★</h3>
+      <p>Based on ${ratings.length} ratings</p>
+    `;
+  });
+
+  onValue(commentsRef, snap => {
+    const section = document.getElementById("commentsSection");
+    section.innerHTML = "";
+    if (snap.exists()) {
+      const comments = snap.val();
+      for (const [id, data] of Object.entries(comments)) {
+        section.appendChild(renderComment(data, id));
+      }
+    }
+  });
+</script>
+</body>
+</html>
