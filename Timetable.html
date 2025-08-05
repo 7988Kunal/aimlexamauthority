@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SR Security Hours</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f7;
+      padding: 20px;
+    }
+
+    .hours-container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .hours-container h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    .date-time {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    .day-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .day-row:last-child {
+      border-bottom: none;
+    }
+
+    .day-name {
+      font-weight: 600;
+    }
+
+    .closed {
+      color: red;
+    }
+
+    .open {
+      color: green;
+    }
+
+    .highlight {
+      background: #e3f2fd;
+      font-weight: bold;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 500px) {
+      .day-row {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hours-container">
+    <h2>SR Security Service Hours</h2>
+    <div class="date-time" id="dateTimeDisplay"></div>
+    <div id="hoursList"></div>
+  </div>
+
+  <script>
+    const operatingHours = {
+      "Monday": "9:00 AM – 5:00 PM",
+      "Tuesday": "9:00 AM – 5:00 PM",
+      "Wednesday": "9:00 AM – 5:00 PM",
+      "Thursday": "9:00 AM – 5:00 PM",
+      "Friday": "9:00 AM – 5:00 PM",
+      "Saturday": "9:00 AM – 5:00 PM",
+      "Sunday": "Closed"
+    };
+
+    const holidays = ["2025-08-15", "2025-10-02"]; // Add holiday dates here in YYYY-MM-DD
+
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    const dateStr = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const isHoliday = holidays.includes(today.toISOString().slice(0, 10));
+
+    document.getElementById('dateTimeDisplay').textContent = `${dayName}, ${dateStr}`;
+
+    const hoursList = document.getElementById("hoursList");
+
+    for (const [day, hours] of Object.entries(operatingHours)) {
+      const isToday = day === dayName;
+      const div = document.createElement("div");
+      div.className = "day-row" + (isToday ? " highlight" : "");
+      const hoursText = (day === dayName && isHoliday) ? "Closed (Holiday)" : hours;
+      const statusClass = hoursText.toLowerCase().includes("closed") ? "closed" : "open";
+      div.innerHTML = `<span class="day-name">${day}</span><span class="${statusClass}">${hoursText}</span>`;
+      hoursList.appendChild(div);
+    }
+  </script>
+</body>
+</html>
