@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SR Security | Merit List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #eef2f3;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+
+    .search-bar {
+      max-width:400px;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding:8px;
+      /*padding: 10px 12px;*/
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .merit-container {
+      max-width: 1000px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .category {
+      padding: 5px 10px;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .Training {
+      background: #007bff;
+    }
+
+    .Job {
+      background: #28a745;
+    }
+
+    .test-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .Invite {
+      background-color: #28a745;
+    }
+
+    .NotInvite {
+      background-color: #dc3545;
+    }
+
+    .NotMentioned {
+      background-color: #6c757d;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: #333;
+      margin-top: 6px;
+      background: #f6f6f6;
+      border-left: 3px solid #ccc;
+      padding: 5px 8px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border: none;
+        font-size: 0.9rem;
+        flex-direction: column;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 4px;
+      }
+
+      .test-status {
+        width: fit-content;
+        margin-bottom: 6px;
+      }
+    }
+    input:hover{
+      border:2px solid #01616b;
+    }
+  </style>
+</head>
+<body>
+  <h1>SR Security Merit List</h1>
+
+  <div class="search-bar">
+    <input type="text" style="outline:none;"id="searchInput" placeholder="🔍 Search Application ID...">
+  </div>
+
+  <div class="merit-container">
+    <table id="meritTable">
+      <thead>
+        <tr>
+          <th>S. No.</th>
+          <th>Application ID</th>
+          <th>Name</th>
+          <th>Apply For</th>
+          <th>Status</th>
+          <th>Category</th>
+          <th>Physical Test</th>
+        </tr>
+      </thead>
+      <tbody id="meritBody">
+        <tr><td colspan="7">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKjdzj6gcl6bfqvaI8sYEJv8KCDnHUwSM",
+      authDomain: "srsecurity-9d62a.firebaseapp.com",
+      databaseURL: "https://srsecurity-9d62a-default-rtdb.firebaseio.com",
+      projectId: "srsecurity-9d62a",
+      storageBucket: "srsecurity-9d62a.appspot.com",
+      messagingSenderId: "801710662719",
+      appId: "1:801710662719:web:376de7896a74f5db03848a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const meritBody = document.getElementById("meritBody");
+    const searchInput = document.getElementById("searchInput");
+
+    const meritRef = ref(db, "meritList");
+    const registrationsRef = ref(db, "registrations");
+
+    let registrations = {};
+    let fullData = [];
+
+    onValue(registrationsRef, (snap) => {
+      registrations = snap.val() || {};
+    });
+
+    onValue(meritRef, (snapshot) => {
+      const data = snapshot.val();
+      fullData = [];
+
+      if (data) {
+        Object.entries(data).forEach(([appId, meritData]) => {
+          const info = registrations[appId] || {};
+          fullData.push({
+            appId,
+            applicationNumber: info.applicationNumber || appId,
+            name: info.name || meritData.name || "N/A",
+            applyFor: info.applyFor || "N/A",
+            status: info.status || "N/A",
+            category: meritData.category || "Training",
+            test: meritData.test || "Not Mentioned",
+            note: meritData.note || ""
+          });
+        });
+      }
+
+      renderTable(fullData);
+    });
+
+    function renderTable(data) {
+      meritBody.innerHTML = "";
+      if (data.length === 0) {
+        meritBody.innerHTML = "<tr><td colspan='7'>No candidates found.</td></tr>";
+        return;
+      }
+
+      data.forEach((item, index) => {
+        const testClass = item.test.replace(/\s/g, '') || "NotMentioned";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td data-label="S. No.">${index + 1}</td>
+          <td data-label="Application ID">${item.applicationNumber}</td>
+          <td data-label="Name">${item.name}</td>
+          <td data-label="Apply For">${item.applyFor}</td>
+          <td data-label="Status">${item.status}</td>
+          <td data-label="Category">
+            <span class="category ${item.category}">${item.category}</span>
+          </td>
+          <td data-label="Physical Test">
+            <span class="test-status ${testClass}">${item.test}</span>
+            ${item.note ? `<div class="note">📝 ${item.note}</div>` : ""}
+          </td>
+        `;
+        meritBody.appendChild(tr);
+      });
+    }
+
+    searchInput.addEventListener("input", () => {
+      const value = searchInput.value.trim().toLowerCase();
+      const filtered = fullData.filter(d =>
+        d.applicationNumber.toLowerCase().includes(value)
+      );
+      renderTable(filtered);
+    });
+  </script>
+</body>
+</html>
