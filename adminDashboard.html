@@ -56,7 +56,7 @@
   cursor: pointer;
 }
 </style>
-  <!--<style>
+<style>
   * {
     box-sizing: border-box;
   }
@@ -241,7 +241,47 @@
     max-height: 90%;
     border-radius: 10px;
   }
+  .link-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
 
+.link-group a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 6px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Different button colors */
+.link-group a:nth-child(1) { background-color: #dc3545; }  /* Red */
+.link-group a:nth-child(2) { background-color: purple; }
+.link-group a:nth-child(3) { background-color: orange; color: black; }
+.link-group a:nth-child(4) { background-color: green; }
+
+/* Hover effect */
+.link-group a:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .link-group a {
+    width: 95%;
+    font-size: 0.95rem;
+  }
+}
   /* Mobile Styles */
   @media (max-width: 768px) {
     header {
@@ -290,8 +330,8 @@
       width: 100%;
     }
   }
-</style>-->
-<style>
+</style>
+<!--<style>
   * {
   box-sizing: border-box;
 }
@@ -595,7 +635,7 @@ img.zoomable {
     gap: 0.75rem !important;
   }
  }
-</style>
+</style>-->
 </head>
 <body>
   <header>Admin Dashboard - SR Security</header>
