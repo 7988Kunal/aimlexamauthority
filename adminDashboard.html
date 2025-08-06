@@ -56,7 +56,7 @@
   cursor: pointer;
 }
 </style>
-  <style>
+  <!--<style>
   * {
     box-sizing: border-box;
   }
@@ -290,6 +290,251 @@
       width: 100%;
     }
   }
+</style>-->
+<style>
+  * {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url('https://i.pinimg.com/originals/5d/55/96/5d5596ed13364bb987b5c11d64d6f27b.jpg') no-repeat center center fixed;
+  background-size: cover;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+header {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.97);
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 1200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.top-bar input,
+.top-bar select {
+  flex: 1 1 250px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  transition: 0.3s;
+}
+
+.top-bar input:focus,
+.top-bar select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.total-count {
+  font-weight: bold;
+  color: #333;
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+.card {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.actions button {
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.actions .view { background-color: #007bff; color: white; }
+.actions .edit { background-color: #ffc107; color: black; }
+.actions .delete { background-color: #dc3545; color: white; }
+
+.actions button:hover {
+  opacity: 0.85;
+}
+
+.status-label {
+  font-weight: bold;
+  padding: 5px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.status-approved { background: #d4edda; color: #155724; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-rejected { background: #f8d7da; color: #721c24; }
+
+.status-buttons button {
+  padding: 6px 12px;
+  margin-right: 5px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.logout {
+  background-color: #333;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  display: block;
+  margin: 2rem auto;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.logout:hover {
+  background-color: #000;
+}
+
+#detail-section {
+  margin-top: 2rem;
+  overflow-x: auto;
+  display: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  min-width: 600px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+img.zoomable {
+  max-width: 100px;
+  cursor: zoom-in;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  header {
+    font-size: 1.6rem;
+    padding: 1rem;
+  }
+
+  .container {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .actions button {
+    flex: 1 1 auto;
+  }
+
+  table {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-bar {
+    flex-direction: column;
+  }
+
+  .logout {
+    width: 100%;
+  }
+
+  .card-header {
+    gap: 1rem;
+  }
+}
 </style>
 </head>
 <body>
